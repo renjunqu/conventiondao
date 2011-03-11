@@ -1,0 +1,2 @@
+2010-4-28
+支持tiggerDAO.leftjoin(joinDAO, "testlist", "join_test_id").query( )
