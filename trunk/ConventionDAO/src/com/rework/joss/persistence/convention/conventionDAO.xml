@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="GBK"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN 2.0//EN" "http://project/doc/spring-framework-2.x/dist/spring-beans-2.0.dtd">
+<beans>
+	<!--针对jes服务器-->
+	<!--
+	<bean id="nativeJdbcExtractor"
+		class="org.springframework.jdbc.support.nativejdbc.SimpleNativeJdbcExtractor"
+		lazy-init="true"/>
+	-->
+		
+	<!--针对WebSphere服务器-->
+	<!--bean id="nativeJdbcExtractor"
+		class="org.springframework.jdbc.support.nativejdbc.WebSphereNativeJdbcExtractor"
+		lazy-init="true"/-->
+	<!--
+	<bean id="oracleLobHandler"
+		class="org.springframework.jdbc.support.lob.OracleLobHandler"
+		lazy-init="true">
+		<property name="nativeJdbcExtractor">
+			<ref local="nativeJdbcExtractor"/>
+		</property>
+	</bean>
+	-->
+	<bean id="oracleLobHandler"
+		class="com.rework.joss.persistence.convention.spring.OracleLobLazyHandler"
+		lazy-init="true">
+	</bean>
+	<bean id="jdbcTypeHandlerFactory"
+		class="com.rework.joss.persistence.convention.jdbctype.JdbcTypeHandlerFactory">
+		<constructor-arg ref="oracleLobHandler"></constructor-arg>
+	</bean>
+	
+	<bean id="metaSource"
+		class="com.rework.joss.persistence.convention.ORMappingSource" autowire="byName">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+
+	<bean id="generator" class="com.rework.joss.persistence.convention.id.IDGeneratorFactory"></bean>
+	<bean id="baseSqlMap" class="org.springframework.beans.factory.config.MapFactoryBean">
+    <property name="sourceMap">
+	      <props>
+              <prop key="findById">select * from ${tbl.dbo.name} where  ${tbl.dbo.pkColumn.name} = ?</prop>
+              <prop key="removeById">delete from ${tbl.dbo.name} where  ${tbl.dbo.pkColumn.name} = ?</prop>
+              <prop key="create">
+                <![CDATA[
+                  insert into ${tbl.dbo.name} (  
+                  <#list tbl.columnsWithNotNullValue as x>
+                    ${x.name}<#if x_has_next>,</#if>
+                  </#list>  
+                  )values(
+                  <#list tbl.columnsWithNotNullValue as x>
+                      ? <#if x_has_next>,</#if>
+                  </#list>
+                  )
+                ]]> 
+              </prop>
+              <prop key="update">
+                <![CDATA[
+                  update ${tbl.dbo.name}
+                  set 
+                  <#list tbl.columnsWithNotNullValue as x>
+                    ${x.name} = ?<#if x_has_next>,</#if>
+                  </#list>  
+                  where ${tbl.dbo.pkColumn.name} = '${tbl.dbo.pkColumn.propValue}'
+                ]]> 
+              </prop>
+              <prop key="updateNotIgnoreNull">
+                <![CDATA[
+                  update ${tbl.dbo.name}
+                  set 
+                  <#list tbl.columnsWithNotIgnoreNull as x>
+                    ${x.name} = ?<#if x_has_next>,</#if>
+                  </#list>  
+                  where ${tbl.dbo.pkColumn.name} = '${tbl.dbo.pkColumn.propValue}'
+                ]]> 
+              </prop>
+              <prop key="updateIgnoreEmpty">
+                <![CDATA[
+                  update ${tbl.dbo.name}
+                  set 
+                  <#list tbl.columnsWithNotEmptyValue as x>
+                    ${x.name} = ?<#if x_has_next>,</#if>
+                  </#list>  
+                  where ${tbl.dbo.pkColumn.name} = '${tbl.dbo.pkColumn.propValue}'
+                ]]> 
+              </prop>
+              <prop key="updateByConditionIgnoreNull">
+                <![CDATA[
+                  update ${tbl.dbo.name}
+                  set 
+                  <#list tbl.columnsWithNotNullValue as x>
+                    ${x.name} = ?<#if x_has_next>,</#if>
+                  </#list>  
+                  where 1=1
+                  <#list tbl.conditionsWithNotEmptyValue as y>
+                      and ${y.name} = ?
+                  </#list>  
+                ]]> 
+              </prop>
+              <prop key="updateByConditionIgnoreEmpty">
+                <![CDATA[
+                  update ${tbl.dbo.name} 
+                  set 
+                  <#list tbl.columnsWithNotEmptyValue as x>
+                    ${x.name} = ?<#if x_has_next>,</#if>
+                  </#list>  
+                  where 1=1
+                  <#list tbl.conditionsWithNotEmptyValue as y>
+                      and ${y.name} = ?
+                  </#list>  
+                ]]> 
+              </prop>
+              <prop key="query">
+                <![CDATA[
+                    select * from ${tbl.dbo.name} where 1=1
+                      <#list tbl.columnsWithNotEmptyValue as x>
+                        <#if fuzzy??>
+                        and ${x.name} like ?
+                        <#else>
+                        and ${x.name} = ?
+                        </#if>
+                      </#list>
+                      ${criteria?if_exists}
+                      ${orderBy?if_exists}
+                ]]> 
+              </prop>
+              <prop key="queryAll">
+                <![CDATA[
+                  select * from ${tbl.dbo.name}
+                  where 1=1
+                    <#list tbl.columnsWithNotEmptyValue as x>
+                      and ${x.name} = ?
+                    </#list>
+                  ${criteria?if_exists}
+                  ${orderBy?if_exists}
+                ]]> 
+              </prop>
+              <prop key="queryCount">
+                <![CDATA[
+                  select count(*) from ${tbl.dbo.name}
+                  where 1=1
+                    <#list tbl.columnsWithNotEmptyValue as x>
+                      <#if fuzzy??>
+                      and ${x.name} like ?
+                      <#else>
+                      and ${x.name} = ?
+                      </#if>
+                    </#list>
+                ]]> 
+              </prop>
+              <prop key="queryCountByCriteria">
+                <![CDATA[
+                  select count(*) from ${tbl.dbo.name}
+                  where 1=1
+                    <#list tbl.columnsWithNotEmptyValue as x>
+                      and ${x.name} = ?
+                    </#list>
+                  ${criteria?if_exists}
+                ]]>
+              </prop>
+              <prop key="queryByIds">
+                <![CDATA[
+                  select count(*) from ${tbl.dbo.name}
+                  where ${tbl.dbo.pkColumn.name} in ( 'a impossible value _ 3 s'
+                    <#list ids as x>
+                        , ?
+                    </#list>
+                    )
+                  ${criteria?if_exists}
+                ]]>
+              </prop>
+              <prop key="remove">
+                <![CDATA[
+                  delete from ${tbl.dbo.name}
+                  where 1=1
+                    <#list tbl.columnsWithNotEmptyValue as x>
+                        and ${x.name} = ?
+                    </#list>
+                    ${criteria?if_exists}
+                ]]> 
+              </prop>
+          </props>
+	  </property>
+	</bean>
+	<bean id="baseConvetionDAO" 
+		class="com.rework.joss.persistence.convention.BaseDAOByConvention" abstract="true" init-method="init">
+		<property name="dataSource" ref="dataSource"/>
+		<property name="metaSource" ref="metaSource"/>
+		<property name="jdbcTypeHandlerFactory" ref="jdbcTypeHandlerFactory"/>
+		<property name="generator" ref="generator"/>
+		<property name="baseSqlMap" ref="baseSqlMap"/>
+	</bean>
+</beans>

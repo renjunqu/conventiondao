@@ -1,0 +1,27 @@
+  private RowMapper extendMapper = new RowMapper(){
+    public Object mapRow(ResultSet rs, int num) throws SQLException {
+ 
+      Object object = getBaseObjectByPojoPath();
+      ResultSetMetaData metaData = rs.getMetaData();
+      int count = metaData.getColumnCount();
+      if(logger.isTraceEnabled()){
+        logger.info("start to copy property........");
+      }
+      for (int i = 0; i < count; i++) {
+        String colName = metaData.getColumnLabel(i+1);
+        int sqlType = metaData.getColumnType(i+1);
+        String propertyName = conventionStrategy.translateFromColumnToProperty(colName, false);
+        try {
+          if(PropertyUtils.isWriteable(object, propertyName)){
+            setPropertyValue(object, propertyName, rs, colName, sqlType);
+          }
+        } catch (Exception e) {
+          logger.error("copy["+colName+"->property"+propertyName+"[error："+e.getMessage(), e);
+        } 
+      }
+      if(logger.isTraceEnabled()){
+        logger.info("end copy property........");
+      }
+      return object;
+    }
+  };
