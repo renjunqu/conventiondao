@@ -234,7 +234,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 
 
 	/**
-	 * 数据库结构dbo与pojo的映射关系，这里只能映射指定的数据库结构dbo
+	 * 数据库结构dbo与pojo的映射关系
 	 */
 	private RowMapper currentrowmapper;
 	
@@ -360,7 +360,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 					logger.info("start to copy property........");
 				}
 				for (int i = 0; i < count; i++) {
-					String colName = metaData.getColumnName(i+1);
+					String colName = metaData.getColumnLabel(i+1);
 					ColumnBean column = tableBean.getPojoColumnByColumnName(colName);
 					if(null == column) {
 						//不是自己对应表的字段
