@@ -568,10 +568,10 @@ public abstract class ConventionUtils {
 	
 	public static Map toMap(Object... objs) {
 		Map map = new HashMap();
-		String key = null;
+		Object key = null;
 		for (int i = 0; i < objs.length; i++) {
 			if(i%2 == 0){
-				key = objs[i].toString();
+				key = objs[i];
 			}else{
 				map.put(key, objs[i]);
 			}
