@@ -338,7 +338,7 @@ public abstract class ConventionUtils {
 					if("".equals(handleValue)){
 						// 这里需要特殊处理一下, 因为比如说更新Types.DECIMAL, Types.NUMERIC类型的字段为空时
 						// 如果直接处理这些字段的话, 除非为null值否则必须有值的, 所以如果为空值的时话就特殊处理一下这些字段
-						valueList.add(handleValue);
+						valueList.add(null);
 						typeList.add(new Integer(SqlTypeValue.TYPE_UNKNOWN));
 					}else{
 						valueList.add(handleValue);
