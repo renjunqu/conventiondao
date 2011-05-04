@@ -90,7 +90,9 @@ public class TiggerDAOTest extends BaseDAOTestCase {
 
 		
 		// List<DAOTestDTO> list = tiggerDAO.leftjoin(joinDAO, "testlist", "join_test_id").query( );
-		List<DAOTestDTO> list = tiggerDAO.queryByTpl("", ConventionUtils.toMap( IBaseDAO.PARAM_FETCH_PROPERTIES, "testlist:order by test_id desc" ));
+		List<DAOTestDTO> list = tiggerDAO.queryByTpl("", 
+			ConventionUtils.fetch( "testlist:order by test_id desc" )
+		);
 		// 更复杂的例子
 		// List<DAOTestDTO> list2 = tiggerDAO.queryByTpl("", UtilMisc.toMap( IBaseDAO.PARAM_FETCH_PROPERTIES, "testlist:order by test_id desc|leftjoin:testlist2:order by test_id desc" ));
 		list.get(0).getTestlist().size();

@@ -1,4 +1,4 @@
-﻿/* 
+/* 
  * Copyright (c) 2004-2007 HEER Software, Inc. All rights reserved.
  *
  * This software consists of contributions made by many individuals
@@ -15,7 +15,7 @@ import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Types;
+import java.sql.Types; 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -410,15 +410,13 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	 * @return
 	 */
 	private String initSqlMapByKey(String sqlTemplate, RuntimeRowObject rowObject, Object paramMap) {
-		Map tempMap;
+		Map tempMap = new HashMap();
 		// TODO for check
 		if(paramMap == null){
-			tempMap = new HashMap();
 		}else if(paramMap instanceof Map){
 			tempMap = (Map) paramMap;
 		}else{
-			// TODO
-			throw new RuntimeException("暂不支持除了Map的其他格式！");
+			tempMap.putAll( new BeanMap(paramMap) );
 		}
 		// tbl是关键字,不能重复
 		if(null != tempMap.get("tbl")){
@@ -470,12 +468,12 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 		return false;
 	}
 	
-	public BaseObject findById(String id){
+	public BaseObject findById(Object id){
 		return findById(id, new HashMap());
 	}
 	
-	public BaseObject findById(String id, Map paramMap) {
-		Assert.hasText(id, "id不能为空");
+	public BaseObject findById(Object id, Map paramMap) {
+		Assert.notNull(id, "id不能为空");
 		if(tableObject.getPkColumns().isEmpty()){
 			throw new BaseRuntimeException("未定义主键!");
 			/*
@@ -500,15 +498,16 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 		}
 	}
 	
-	public List findByIds(String[] ids) {
+	public List findByIds(Object[] ids) {
 		Assert.notEmpty(ids, "不能存在空id");
 		if(tableObject.getPkColumns().isEmpty()){
 			throw new BaseRuntimeException("未定义主键!");
 		}else{
 			String sqlTemplate = getSqlTemplate("findByIds");
-			String sql = initSqlMapByKey(sqlTemplate, mixDbAndPojo( ConventionUtils.toMap("ids", ids) ), null);
+			
+			String sql = initSqlMapByKey( sqlTemplate, mixDbAndPojo(null), ConventionUtils.toMap("ids", ids) );
 			try{
-				List result = getJdbcTemplate().queryForList(sql, ids, getRowMapper());
+				List result = getJdbcTemplate().query(sql, ids, getRowMapper());
 				processFetchProperties(new HashMap(), sql, ids, ConventionUtils.list(result));
 				return result;
 			}catch(EmptyResultDataAccessException emptyEx){
@@ -522,7 +521,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 		String sql = initSqlMap("findById", mixDbAndPojo(null), null);
 		try{
 			return (BaseObject)getJdbcTemplate().queryForObject(sql,new Object[]{id},mapper);
-		}catch(EmptyResultDataAccessException emptyEx){
+		}catch(EmptyResultDataAccessExcekption emptyEx){
 			return null;
 		}
 	}*/
@@ -666,14 +665,20 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	 * @param dto
 	 * @return
 	 */
-	private Integer excuteQueryCount(String sqlMapKey, BaseObject dto, Map paramMap){
-		RuntimeRowObject rowObject = mixDbAndPojo(dto);
+	private Integer excuteQueryCount(String sqlMapKey, Object param){
+		RuntimeRowObject rowObject = mixDbAndPojo(param);
 		String sql = getSqlTemplate(sqlMapKey);
-		String prepareStatSql = initSqlMapByKey(sql, rowObject, paramMap);
-		Object[] args = ConventionUtils.getPropertyValuesIgnoreEmpty(dto, this.tableObject, jdbcTypeHandlerFactory, this.conventionStrategy).getArgs();
+		String prepareStatSql = initSqlMapByKey(sql, rowObject, param);
+		
+		Object[] args = ConventionUtils.getPropertyValuesIgnoreEmpty(param, this.tableObject, jdbcTypeHandlerFactory, this.conventionStrategy).getArgs();
 		if(logger.isDebugEnabled())
 			logger.info("args["+StringUtils.join(args,",")+"]");
-		String fuzzyType = (String) paramMap.get(PARAM_QUERY_FUZZY_TYPE);
+		String fuzzyType = null;
+		try {
+			fuzzyType = (String)BeanUtils.getProperty(param, PARAM_QUERY_FUZZY_TYPE);
+		} catch (Exception e) {
+			logger.info("get fuzzyType from object error");
+		} 
 		// 对通用模糊查询的处理
 		if(StringUtils.isNotBlank(fuzzyType)){
 			String[] values = fuzzyArgs(args, fuzzyType);
@@ -885,8 +890,11 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 		return excuteQueryUsingBaseObject("queryAll", null, paramMap);
 	}
 	
-	public Integer queryCount(BaseObject dto) {
-		return excuteQueryCount("queryCount", dto, new HashMap());
+	public Integer queryCount(Object criteriaOrbeanOrMap) {
+		if(criteriaOrbeanOrMap instanceof String){
+			return queryCount(null, (String)criteriaOrbeanOrMap);
+		}
+		return excuteQueryCount("queryCount", criteriaOrbeanOrMap);
 	}
 	
 	public Integer queryCount(BaseObject dto, Map queryParamMap) {
@@ -898,19 +906,16 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 		if(queryParamMap.containsKey(PARAM_ORDER_BY)){
 			paramMap.put(PARAM_ORDER_BY, ORDER_BY + queryParamMap.get(PARAM_ORDER_BY));
 		}
-		return excuteQueryCount("queryCount", dto, paramMap);
+		queryParamMap.putAll( new BeanMap(dto) );
+		return excuteQueryCount("queryCount", queryParamMap);
 	}
 	
-	public Integer queryCountByDtoAndCriteria(BaseObject dto, String criteria){
+	public Integer queryCount(Object object, String criteria){
 		Map paramMap = new HashMap();
 		if(StringUtils.isNotBlank(criteria)){
 			paramMap.put(PARAM_CRITERIA, AND + criteria);
 		}
-		return excuteQueryCount("queryCountByCriteria", dto, paramMap);
-	}
-	
-	public Integer queryCountByCriteria(String criteria){
-		return queryCountByDtoAndCriteria(null, criteria);
+		return excuteQueryCount("queryCountByCriteria", paramMap);
 	}
 	
 	//根据map的key拷贝map值到BaseObject对应的属性

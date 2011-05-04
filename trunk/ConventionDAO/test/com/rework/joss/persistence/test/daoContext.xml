@@ -5,7 +5,6 @@
   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-2.5.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd"
   default-lazy-init="true">
 	<import resource="classpath:com/rework/joss/persistence/convention/conventionDAO.xml" />
-	<!-- 浣跨敤annotation 镊姩娉ㄥ唽bean,骞朵缭璇丂Required,@Autowired镄勫睘镐ц娉ㄥ叆 -->
   <context:component-scan base-package="com.rework" />
 	
   <!-- 
