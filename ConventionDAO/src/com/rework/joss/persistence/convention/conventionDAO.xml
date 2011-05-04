@@ -40,6 +40,9 @@
     <property name="sourceMap">
 	      <props>
               <prop key="findById">select * from ${tbl.dbo.name} where  ${tbl.dbo.pkColumn.name} = ?</prop>
+              <prop key="findById">
+              select * from ${tbl.dbo.name} where  ${tbl.dbo.pkColumn.name} = ?
+              </prop>
               <prop key="removeById">delete from ${tbl.dbo.name} where  ${tbl.dbo.pkColumn.name} = ?</prop>
               <prop key="create">
                 <![CDATA[
@@ -94,7 +97,7 @@
                   where 1=1
                   <#list tbl.conditionsWithNotEmptyValue as y>
                       and ${y.name} = ?
-                  </#list>  
+                  </#list>
                 ]]> 
               </prop>
               <prop key="updateByConditionIgnoreEmpty">
@@ -158,14 +161,16 @@
                   ${criteria?if_exists}
                 ]]>
               </prop>
-              <prop key="queryByIds">
+              <prop key="findByIds">
                 <![CDATA[
-                  select count(*) from ${tbl.dbo.name}
-                  where ${tbl.dbo.pkColumn.name} in ( 'a impossible value _ 3 s'
+                  select * from ${tbl.dbo.name}
+                  where  
                     <#list ids as x>
-                        , ?
+                        <#if x_index != 0>
+      					or 
+     					</#if>
+      					${tbl.dbo.pkColumn.name} = ?
                     </#list>
-                    )
                   ${criteria?if_exists}
                 ]]>
               </prop>

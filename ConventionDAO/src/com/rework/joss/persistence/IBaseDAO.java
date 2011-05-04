@@ -23,11 +23,18 @@ import com.rework.joss.persistence.convention.BaseDAOByConvention;
 import com.rework.joss.persistence.convention.DTOCallbackHandler;
 import com.rework.joss.persistence.convention.QuerySetting;
 import com.rework.joss.persistence.convention.SqlMapNotFoundException;
+import com.rework.joss.persistence.test.biz.DAOTestDateStringDTO;
+import com.rework.joss.persistence.test.testcase.RetrunedNestObjectTest;
 
 /**
  * 对DAO的操作的抽象 
+ * Tips:
+ * 支持bean嵌套对象 select name as teacher.name from ... 
+ * 其中的name将映射到pojo中的Teacher对象中的name属性,Bean.getTeacher().getName();
+ * 参见{@link RetrunedNestObjectTest}
  * 
- * 
+ * 支持一对多查询， 参见 {@link DAOTestDateStringDTO#getTestlist()}
+ *
  */
 public interface IBaseDAO {
 	
@@ -195,7 +202,8 @@ public interface IBaseDAO {
 	 * @param id
 	 * @return
 	 */
-	public BaseObject findById(String id);
+	public BaseObject findById(Object id);
+	public List findByIds(Object[] ids);
 	
 	/**
 	 * 查询单个对象
@@ -253,19 +261,13 @@ public interface IBaseDAO {
 	public List query(BaseObject dto, String criteria,int begin, int interval, String order);
 
 	public List queryByObjectAndMap(BaseObject object, Map paramMap);
-	/**
-	 * 根据条件查找符合条件的所有记录的总数
-	 * @param dto
-	 * @return
-	 */
-	public Integer queryCount(BaseObject dto);
 	
 	/**
-	 * 根据sql语句约束条件查询记录总数
-	 * @param criteria sql查询条件
+	 * 根据条件查找符合条件的所有记录的总数
+	 * @param dto or map or sql查询条件
 	 * @return
 	 */
-	public Integer queryCountByCriteria(String criteria);
+	public Integer queryCount(Object dto);
 	
 	/**
 	 * 同时根据查询对象和sql语句约束条件查询记录总数
@@ -273,7 +275,7 @@ public interface IBaseDAO {
 	 * @param criteria sql查询条件
 	 * @return
 	 */
-	public Integer queryCountByDtoAndCriteria(BaseObject dto, String criteria);
+	public Integer queryCount(Object beanOrMap, String criteria);
 	
 	/***********start 定义：扩展IBaseDAO接口的类可能需要调用的方法***********/
 	

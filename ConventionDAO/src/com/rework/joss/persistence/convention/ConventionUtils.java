@@ -28,6 +28,7 @@ import org.springframework.jdbc.core.SqlTypeValue;
 import org.springframework.util.ClassUtils;
 
 import com.rework.core.dto.BaseObject;
+import com.rework.joss.persistence.IBaseDAO;
 import com.rework.joss.persistence.convention.db.model.ColumnBean;
 import com.rework.joss.persistence.convention.db.model.TableBean;
 import com.rework.joss.persistence.convention.jdbctype.JdbcTypeHandlerFactory;
@@ -564,6 +565,10 @@ public abstract class ConventionUtils {
 			jdbcType = Types.VARCHAR;
 		}
 		return jdbcType;
+	}
+	
+	public static Map fetch(String condition){
+		return ConventionUtils.toMap( IBaseDAO.PARAM_FETCH_PROPERTIES, condition );
 	}
 	
 	public static Map toMap(Object... objs) {

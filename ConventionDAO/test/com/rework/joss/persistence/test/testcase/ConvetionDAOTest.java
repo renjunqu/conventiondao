@@ -13,6 +13,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import junit.framework.Assert;
+
 import com.rework.joss.persistence.IBaseDAO;
 import com.rework.joss.persistence.test.BaseDAOTestCase;
 import com.rework.joss.persistence.test.biz.GyXjStudentDTO;
@@ -59,6 +61,16 @@ public class ConvetionDAOTest extends BaseDAOTestCase {
 		xgStudentDAO.create(student, "0");
 		GyXjStudentDTO student2 = (GyXjStudentDTO)xgStudentDAO.findById(student.getStudentId());
 		assertNotNull(student2);
+	}
+	
+	public void testFindByIds(){
+		
+		GyXjStudentDTO student = getTestStudentDTO();
+		student.setXh("2005013308");
+		xgStudentDAO.create(student, "123124234sdf");
+		List list = xgStudentDAO.findByIds(new Object[]{student.getStudentId()});
+		
+		Assert.assertEquals(list.size(), 1);
 	}
 	
 	public void testInsertWithId(){
@@ -110,12 +122,12 @@ public class ConvetionDAOTest extends BaseDAOTestCase {
 		xgStudentDAO.queryCount(new GyXjStudentDTO());
 	}
 	public void testQueryCountByCriteria(){
-		xgStudentDAO.queryCountByCriteria("xh='333'");
+		xgStudentDAO.queryCount("xh='333'");
 	}
 	public void testQueryCountByDtoAndCriteria(){
 		GyXjStudentDTO query = new GyXjStudentDTO();
 		query.setXb("锟斤拷");
-		xgStudentDAO.queryCountByDtoAndCriteria(query, "pycc in('锟斤拷锟斤拷','专锟斤拷')");
+		xgStudentDAO.queryCount(query, "pycc in('锟斤拷锟斤拷','专锟斤拷')");
 	}
 	
 	
