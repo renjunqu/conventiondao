@@ -52,7 +52,7 @@ public class JoinTable {
 			+ "("+ sql +") as a " + this.joinType + tableName +" as b " 
 			+ "on b." + joinColumnName + " = a." + primaryKeyName;
 		if(StringUtils.isNotBlank(getWhereClause())) {
-			sql += " and " + getWhereClause();
+			sql += " where " + getWhereClause();
 		}
 		if( StringUtils.isNotBlank( getOrderBy() ) ){
 			// sql += " order by ";
