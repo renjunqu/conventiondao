@@ -1,4 +1,4 @@
-/* 
+﻿/* 
  * Copyright (c) 2004-2007 HEER Software, Inc. All rights reserved.
  *
  * This software consists of contributions made by many individuals
@@ -8,6 +8,8 @@
  */
 package com.rework.joss.persistence.convention;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -21,6 +23,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.beanutils.BeanUtils;
@@ -36,6 +41,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.yaml.snakeyaml.Yaml;
 
 import com.rework.core.dto.BaseObject;
 import com.rework.joss.persistence.IBaseDAO;
@@ -107,6 +113,10 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	 * plain old java object
 	 */
 	private String pojo;
+
+    private String mappingFilePath;
+    
+    private Map<String, String> userSqlMap = null;
 
 	private ORMappingSource metaSource;
 	
@@ -207,6 +217,10 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 		// reinit
 		init();
 	}
+
+    public void setMappingFilePath(String path){
+        this.mappingFilePath = path;
+    }
 
 	/**
 	 * 同上, not init
@@ -385,8 +399,8 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 
 	/**
 	 * 通过pojo类型返回对应的实例
-	 * @param pojoClass pojo对应的实例，如果pojoClass不为空则返回这个pojoClass对应的类型
-	 * @param pojo pojo的类路径,如果pojoClass为null的话则实例话
+	 * pojoClass pojo对应的实例，如果pojoClass不为空则返回这个pojoClass对应的类型
+	 * pojo的类路径,如果pojoClass为null的话则实例话
 	 * @return
 	 */
 	public BaseObject getBaseObjectByPojoPath() {
@@ -405,7 +419,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	
 	/**
 	 * 初化执行用sql
-	 * @param sqlMapKey
+	 * @param sqlTemplate
 	 * @param paramMap 用于构造sql的参数map,外部传入,和tableobject进行
 	 * @return
 	 */
@@ -529,7 +543,6 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	 * 执行增/删/改等操作
 	 * @param sqlMapKey
 	 * @param dto 值对象或者Map
-	 * @param paramMap
 	 * @param isEmpty 如果为true则参数中忽略null和空字符，如果为false则参数中只忽略null
 	 * @return 更新记录数
 	 */
@@ -1348,6 +1361,12 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 			paramMap = new HashMap(); 
 		}
 		paramMap.putAll( initParamMap(paramObject, begin, interval) );
+		
+		// 从sqlmap文件中取得sql
+        if( getUserSqlMap().containsKey( sqlTemplate ) ) {
+            sqlTemplate = getUserSqlMap().get( sqlTemplate );
+        }
+
 		if(begin > 0 || interval > 0){
 			sqlTemplate = SqlStrategyFactory.getBean(getDataSource()).paginate(sqlTemplate);
 		}
@@ -1361,8 +1380,41 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 		
 		return results;
 	}
-	
-	public Object queryForBaseObjectByTpl(String sqlTemplate) {
+
+    private Map<String, String> getUserSqlMap() {
+    	
+    	InputStream input = null;
+    	// 第一次访问的时候进行初始化
+    	if( null == this.userSqlMap ){
+    		userSqlMap = new HashMap();
+    		try {
+    			if(StringUtils.isBlank( this.mappingFilePath )){
+    				input = getClass().getResourceAsStream( getClass().getSimpleName() + ".sqlmap" );
+    			}else{
+    				input = Thread.currentThread().getContextClassLoader().getResourceAsStream( this.mappingFilePath );
+    			}
+    		} catch (Exception e) {
+    			logger.debug(" no sqlmapping file find! ");
+    		}
+    		if( null == input ){
+        		logger.debug(" no sqlmapping file find! ");
+            }else{
+            	Properties p = new Properties();
+                try {
+    				p.load(input);
+    				for( Object key : p.keySet() ){
+    					userSqlMap.put((String)key, (String)p.get(key));
+    				}
+    			} catch (IOException e) {
+    				logger.debug("load sqlmap error!");
+    			}
+            }
+    	}
+    	
+    	return userSqlMap;
+    }
+
+    public Object queryForBaseObjectByTpl(String sqlTemplate) {
 		return queryForBaseObjectByTpl(sqlTemplate, null);
 	}
 	

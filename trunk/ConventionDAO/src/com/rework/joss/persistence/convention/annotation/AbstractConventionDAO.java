@@ -1,16 +1,15 @@
 ﻿package com.rework.joss.persistence.convention.annotation;
 
-import java.util.Map;
-
-import javax.annotation.Resource;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.rework.joss.persistence.convention.BaseDAOByConvention;
 import com.rework.joss.persistence.convention.ConventionUtils;
 import com.rework.joss.persistence.convention.ORMappingSource;
 import com.rework.joss.persistence.convention.id.IdGenerator;
 import com.rework.joss.persistence.convention.jdbctype.JdbcTypeHandlerFactory;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.annotation.Resource;
+import java.util.Map;
 
 /**
  * DAO的抽象类,继承这个类的DAO不需要在spring配置文件中声明
@@ -35,6 +34,10 @@ public class AbstractConventionDAO extends BaseDAOByConvention{
 			if(dao.mapping().length > 0){
 				setMapping(ConventionUtils.toMap(dao.mapping()));
 			}
+            if(StringUtils.isNotBlank(dao.mappingFile())){
+                setMappingFilePath( dao.mappingFile() );
+            }
+
 		}
 		super.setMetaSource(metaSource);
 		super.setDataSource(metaSource.getDataSource());

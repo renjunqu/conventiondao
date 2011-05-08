@@ -17,6 +17,8 @@ public @interface DAO {
 	Class pojo();
 	
 	String table();
+
+    String mappingFile() default "";
 	
 	String[] mapping() default { };
 	
