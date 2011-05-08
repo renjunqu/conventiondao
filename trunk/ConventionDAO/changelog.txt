@@ -1,2 +1,7 @@
 2010-4-28
 支持tiggerDAO.leftjoin(joinDAO, "testlist", "join_test_id").query( )
+2010-5-8
+增加从sqlmap文件中读取sql模板，可以在@DAO中指定，不指定默认为当前dao class同目录DAONAME.sqlmap文件，sqlmap格式为properties,
+例如：
+queryname = select *from xx_table
+	
