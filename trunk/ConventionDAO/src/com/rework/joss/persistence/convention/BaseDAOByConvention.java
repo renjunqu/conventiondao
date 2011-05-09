@@ -28,6 +28,7 @@ import java.util.Properties;
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -1396,15 +1397,30 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
     		if( null == input ){
         		logger.debug(" no sqlmapping file find! ");
             }else{
-            	Properties p = new Properties();
-                try {
-    				p.load(input);
-    				for( Object key : p.keySet() ){
-    					userSqlMap.put((String)key, (String)p.get(key));
-    				}
-    			} catch (IOException e) {
-    				logger.debug("load sqlmap error!");
-    			}
+            	try {
+					char[] chars = IOUtils.toCharArray(input);
+					StringBuffer s = new StringBuffer();
+					
+					char status = '=';
+					String key = "";
+					for (int i = 0; i < chars.length; i++) {
+						if( '=' == status && chars[i] == status ){
+							status = ';';
+							key = s.toString();
+							s = new StringBuffer();
+						} else if( ';' == status && chars[i] == status ){
+							status = '=';
+							userSqlMap.put(key.trim(), s.toString().trim());
+							s = new StringBuffer();
+						}else{
+							s.append(chars[i]);
+						}
+					}
+					
+				} catch (IOException e) {
+					logger.debug(" load sqlmapping file error! ");
+				}
+				
             }
     	}
     	
