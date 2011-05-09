@@ -1,4 +1,6 @@
-querybyname=select *from dao_test where testname = #${name}#
-querybyid=\
-	select *from dao_test\
-	where testname = #${id}#
+querybyname=select *from dao_test where testname = #${name}#;
+querybyid=
+	select *from dao_test
+	where testname = #${id}#;
+	
+	
