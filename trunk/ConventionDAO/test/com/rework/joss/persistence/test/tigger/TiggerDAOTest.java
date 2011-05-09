@@ -50,6 +50,23 @@ public class TiggerDAOTest extends BaseDAOTestCase {
 		
 	}
 	
+	public void testSqlmap(){
+		DAOTestDateStringDTO data = new DAOTestDateStringDTO();
+		data.setTestint(new Integer(20));
+		data.setTestname("TESTNAME1");
+		data.setId("test_id_000");
+		data.setTestId("ttest");
+		data.setTestdate("");
+		stringDAO.create(data);
+		
+		List list = tiggerDAO.queryByTpl(
+				"querybyname", 
+				ConventionUtils.toMap(new String[]{"name", "TESTNAME1"}));
+		
+		list.size();;
+		
+	}
+	
 	
 	public void testTpl(){
 		DAOTestDTO data = new DAOTestDTO();
