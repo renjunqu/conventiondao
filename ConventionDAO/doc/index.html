@@ -4,61 +4,76 @@
 <meta content="Cocoa HTML Writer" name="Generator" />
 <meta content="1038.35" name="CocoaVersion" />
 <style type="text/css">
-p.p1 {
-	margin: 0.0px 0.0px 0.0px 0.0px;
-	font: 13.0px Monaco
-}
-
-p.p2 {
-	margin: 0.0px 0.0px 0.0px 0.0px;
-	font: 13.0px Monaco;
-	min-height: 17.0px
-}
-
-span.Apple-tab-span {
-	white-space: pre
-}
-</style>
-<h1 class="p1">conventiondao 说明</h1>
-<p class="p2">&nbsp;</p>
-<p class="p1">ConventionDAO是基于Spring jdbc和一些约定的规则而实现的O/R Mapping框架。</p>
-<p class="p2">&nbsp;</p>
-<p class="p1">ConventionDAO的配置：</p>
-<p class="p1" style="margin-left: 40px;">
+p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px Monaco}
+p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px Monaco; min-height: 17.0px}
+span.Apple-tab-span {white-space:pre}</style>
+<h1 class="p1">
+	conventiondao 说明</h1>
+<p class="p2">
+	&nbsp;</p>
+<p class="p1">
+	ConventionDAO是基于Spring jdbc、Freemarker以及一些约定的规则而实现的O/R Mapping框架。</p>
+<p class="p2">
+	&nbsp;</p>
+<p class="p1">
+	ConventionDAO的配置：</p>
+<p class="p1" style="margin-left: 40px; ">
 	@DAO(pojo=DAOTestDTO.class, table=&quot;dao_test&quot;)</p>
-<p class="p1" style="margin-left: 40px;">public class TiggerDAO
-	extends AbstractConventionDAO{</p>
-<p class="p2">&nbsp;</p>
-<p class="p1">Convention</p>
+<p class="p1" style="margin-left: 40px; ">
+	public class TiggerDAO extends AbstractConventionDAO{</p>
+<p class="p2">
+	&nbsp;</p>
+<p class="p1">
+	Convention</p>
 <ol>
-	<li class="p1">字段名和pojo属性的对应，camul case，例如：表字段user_name 对应
-		Pojo的userName</li>
-	<li class="p1">表主键对应pojo的id(每个表只允许有一个主键)</li>
+	<li class="p1">
+		字段名和pojo属性的对应，camul case，例如：表字段user_name 对应 Pojo的userName</li>
+	<li class="p1">
+		表主键对应pojo的id(每个表只允许有一个主键)</li>
 </ol>
-<p class="p2">&nbsp;</p>
-<p class="p1">id主键生成策略:&nbsp;</p>
+<p class="p2">
+	&nbsp;</p>
+<p class="p1">
+	id主键生成策略:&nbsp;</p>
 <ul>
-	<li class="p1">id_table, 生成的一个数据表, 用来存放全局自增长的id</li>
-	<li class="p1">uuid, java 生成的唯一的32位id, 推荐</li>
-	<li class="p1">none, 或不配置, 那么没有任何策略被使用,
-		这个时候应该使用数据自身的策略,如mysql的自增长主键,oralce的序列等</li>
+	<li class="p1">
+		id_table, 生成的一个数据表, 用来存放全局自增长的id</li>
+	<li class="p1">
+		uuid, java 生成的唯一的32位id, 推荐</li>
+	<li class="p1">
+		none, 或不配置, 那么没有任何策略被使用, 这个时候应该使用数据自身的策略,如mysql的自增长主键,oralce的序列等</li>
 </ul>
-<p class="p2">&nbsp;</p>
-<p class="p1">id主键生成策略配置：</p>
-<p class="p1" style="margin-left: 40px;">dao.proerties&nbsp;</p>
-<p class="p1" style="margin-left: 40px;">idGenerator=uuid</p>
-<p class="p2">&nbsp;</p>
-<p class="p1">sqlmap文件</p>
-<p class="p1" style="margin-left: 40px;">properties格式，key=value</p>
-<p class="p1" style="margin-left: 40px;">位置，默认同DAO在同一目录，文件后缀.sqlmap</p>
-<p class="p1" style="margin-left: 40px;">命名，与DAO名称一致</p>
-<p class="p1" style="margin-left: 40px;">
-	自定义，@DAO(pojo=DAOTestDTO.class, table=&quot;dao_test&quot;,
-	mappingFile=&quot;/com/rework/test/aaa.sqlmap&quot;)</p>
-<p class="p2">&nbsp;</p>
-<p class="p1">时间字段</p>
-<p class="p1" style="margin-left: 40px;">默认dao.properties</p>
-<p class="p1" style="margin-left: 40px;">
+<p class="p2">
+	&nbsp;</p>
+<p class="p1">
+	id主键生成策略配置：</p>
+<p class="p1" style="margin-left: 40px; ">
+	dao.proerties&nbsp;</p>
+<p class="p1" style="margin-left: 40px; ">
+	idGenerator=uuid</p>
+<p class="p2">
+	&nbsp;</p>
+<p class="p1">
+	sqlmap文件</p>
+<p class="p1" style="margin-left: 40px; ">
+	格式说明，key=sql;</p>
+<p class="p1" style="margin-left: 40px; ">
+	sqlmap默认位置，与DAO在同一目录，文件后缀.sqlmap</p>
+<p class="p1" style="margin-left: 40px; ">
+	命名，与DAO名称一致<br />
+	sqlmap语法：freemarker<br />
+	举例： select * from gy_user where username = #${username}#<br />
+	${username}为freemarker语法，变量的值通过 Map或者Pojo参数传入<br />
+	#aa#，表示aa变量为preparedstatement，生成sql为select * from gy_user where username = ?</p>
+<p class="p1" style="margin-left: 40px; ">
+	自定义文件位置，@DAO(pojo=DAOTestDTO.class, table=&quot;dao_test&quot;, mappingFile=&quot;/com/rework/test/aaa.sqlmap&quot;)</p>
+<p class="p2">
+	&nbsp;</p>
+<p class="p1">
+	时间字段</p>
+<p class="p1" style="margin-left: 40px; ">
+	默认dao.properties</p>
+<p class="p1" style="margin-left: 40px; ">
 	updatedateProperty=createdate</p>
-<p class="p1" style="margin-left: 40px;">
+<p class="p1" style="margin-left: 40px; ">
 	updatedateProperty=updatedate</p>
