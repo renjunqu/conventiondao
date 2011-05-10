@@ -336,11 +336,25 @@ public abstract class ConventionUtils {
 					typeList.add(new Integer(elem.getJdbcType()));
 				}
 				if(propValueLabel == PROPVALUE_NOT_NULL_FLAG && value != null){
-					if("".equals(handleValue)){
-						// 这里需要特殊处理一下, 因为比如说更新Types.DECIMAL, Types.NUMERIC类型的字段为空时
-						// 如果直接处理这些字段的话, 除非为null值否则必须有值的, 所以如果为空值的时话就特殊处理一下这些字段
-						valueList.add(null);
-						typeList.add(new Integer(SqlTypeValue.TYPE_UNKNOWN));
+					// 有的时候用String来表示数据中的数字型等其它类型
+					// 这里需要特殊处理一下, 因为比如说更新Types.DECIMAL, Types.NUMERIC类型的字段为空时
+					// 如果直接处理这些字段的话, 除非为null值否则必须有值的, 所以如果为空值的时话就特殊处理一下这些字段
+					if( "".equals(handleValue) ){
+						if( 
+								   elem.getJdbcType() == Types.CLOB 
+								|| elem.getJdbcType() == Types.VARCHAR
+								|| elem.getJdbcType() == Types.CHAR
+								|| elem.getJdbcType() == Types.LONGVARCHAR
+								|| elem.getJdbcType() == Types.NVARCHAR
+								|| elem.getJdbcType() == Types.LONGNVARCHAR
+							){
+							valueList.add(handleValue);
+							typeList.add(new Integer(elem.getJdbcType()));	
+						}
+						else{
+							valueList.add(null);
+							typeList.add(new Integer(elem.getJdbcType()));
+						}
 					}else{
 						valueList.add(handleValue);
 						typeList.add(new Integer(elem.getJdbcType()));
