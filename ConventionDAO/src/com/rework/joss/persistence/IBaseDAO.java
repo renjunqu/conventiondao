@@ -211,7 +211,7 @@ public interface IBaseDAO {
 	 * @return 查询结果，如果不存在则返回null
 	 * @throws IncorrectResultSizeDataAccessException  如果查询结果超过1个
 	 */
-	public BaseObject queryForBaseObject(BaseObject dto);
+	public BaseObject queryForBaseObject(Object pojoOrMap);
 	
 	/**
 	 * 根据sql查询某个对象
@@ -231,7 +231,7 @@ public interface IBaseDAO {
 	 * @param order
 	 * @return List 记录集合
 	 */
-	public List query(BaseObject dto, int begin, int interval, String order);
+	public List query(Object pojoOrMap, int begin, int interval, String order);
 	
 	/**
 	 * 根据条件查找出符合条件的所有记录，可以排序
@@ -239,7 +239,7 @@ public interface IBaseDAO {
 	 * @param order
 	 * @return
 	 */
-	public List query(BaseObject dto, String order);
+	public List query(Object pojoOrMap, String order);
 	
 	/**
 	 * 根据条件查找出符合条件的所有记录，可以排序
@@ -248,7 +248,7 @@ public interface IBaseDAO {
 	 * @param order 排序方式
 	 * @return
 	 */
-	public List query(BaseObject dto, String criteria, String order);
+	public List query(Object pojoOrMap, String criteria, String order);
 	/**
 	 * 根据条件查找出符合条件的所有记录，可以排序
 	 * @param dto
@@ -258,7 +258,7 @@ public interface IBaseDAO {
 	 * @param order 排序方式
 	 * @return
 	 */
-	public List query(BaseObject dto, String criteria,int begin, int interval, String order);
+	public List query(Object pojoOrMap, String criteria,int begin, int interval, String order);
 
 	public List queryByObjectAndMap(BaseObject object, Map paramMap);
 	
