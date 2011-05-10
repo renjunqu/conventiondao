@@ -840,48 +840,56 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 		return query(null, "");
 	}
 	
-	public List query(BaseObject object){
-		return query(object, "");
+	public List query(Object pojoOrMap){
+		return query(pojoOrMap, "");
 	}
 	
-	public List query(BaseObject dto, int begin, int interval, String order) {
-		Map paramMap = ConventionUtils.toMap(
-				PARAM_BEGIN_NUM, String.valueOf(begin),
-				PARAM_END_NUM, String.valueOf(begin + interval + 1),
-				PARAM_INTERVAL, interval);
-		if(StringUtils.isNotBlank(order))
-			paramMap.put(PARAM_ORDER_BY, ORDER_BY+order);
-		return excuteQueryUsingBaseObject("query", dto, paramMap);
+	public List query(Object pojoOrMap, int begin, int interval, String order) {
+		return query(pojoOrMap, null, begin, interval, order);
 	}
 	
-	public List query(BaseObject dto, String order) {
-		HashMap paramMap = new HashMap();
-		if(StringUtils.isNotBlank(order))
-			paramMap.put(PARAM_ORDER_BY, ORDER_BY+order);
-		return excuteQueryUsingBaseObject("queryAll", dto, paramMap);
+	public List query(Object pojoOrMap, String order) {
+		return query(pojoOrMap, null, order);
 	}
 	
-	public List query(BaseObject dto, String criteria, String order){
-		HashMap paramMap = new HashMap();
+	public List query(Object pojoOrMap, String criteria, String order){
+		return query(pojoOrMap, criteria, -1, -1, order);
+	}
+	
+	public List query(Object pojoOrMap, String criteria, int begin, int interval, String order) {
+		
+		Map paramMap = new HashMap();
+		if( begin >= 0 && interval > 0 ){
+			paramMap.putAll(
+					ConventionUtils.toMap(
+							PARAM_BEGIN_NUM, String.valueOf(begin),
+							PARAM_END_NUM, String.valueOf(begin + interval + 1),
+							PARAM_INTERVAL, interval)
+			);
+		}
+		
 		if(StringUtils.isNotBlank(criteria)){
 			paramMap.put(PARAM_CRITERIA, AND + criteria);
 		}
 		if(StringUtils.isNotBlank(order))
 			paramMap.put(PARAM_ORDER_BY, ORDER_BY+order);
-		return excuteQueryUsingBaseObject("queryAll", dto, paramMap);
-	}
-	
-	public List query(BaseObject dto, String criteria, int begin, int interval, String order) {
-		Map paramMap = ConventionUtils.toMap(
-				PARAM_BEGIN_NUM, String.valueOf(begin),
-				PARAM_END_NUM, String.valueOf(begin + interval + 1),
-				PARAM_INTERVAL, interval);
-		if(StringUtils.isNotBlank(criteria)){
-			paramMap.put(PARAM_CRITERIA, AND + criteria);
+		if( null == pojoOrMap ){
+			return excuteQueryUsingBaseObject("query", null, paramMap);
 		}
-		if(StringUtils.isNotBlank(order))
-			paramMap.put(PARAM_ORDER_BY, ORDER_BY+order);
-		return excuteQueryUsingBaseObject("query", dto, paramMap);
+		if( pojoOrMap instanceof Map ){
+			BaseObject dto = getBaseObjectByPojoPath();
+			try {
+				BeanUtils.copyProperties(dto, pojoOrMap);
+			} catch (IllegalAccessException e) {
+			} catch (InvocationTargetException e) {
+				// donoting
+			}
+			return excuteQueryUsingBaseObject("query", dto, paramMap);
+		}else if( pojoOrMap instanceof BaseObject ){
+			return excuteQueryUsingBaseObject("query", (BaseObject) pojoOrMap, paramMap);
+		}else{
+			throw new IllegalArgumentException("参数应该是BaseObject或者Map");
+		}
 	}
 	
 	public List queryByObjectAndMap(BaseObject paramObject, Map paramMap){
@@ -946,8 +954,8 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 		}
 	}
 	
-	public BaseObject queryForBaseObject(BaseObject dto){
-		List resultList = this.query(dto, "");
+	public BaseObject queryForBaseObject(Object pojoOrMap){
+		List resultList = this.query(pojoOrMap, "");
 		if(resultList.size() < 1){
 			return null;
 		}else if(resultList.size() == 1){
