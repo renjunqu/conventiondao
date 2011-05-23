@@ -20,11 +20,9 @@ import java.util.Set;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.jdbc.core.SqlTypeValue;
 import org.springframework.util.ClassUtils;
 
 import com.rework.core.dto.BaseObject;
