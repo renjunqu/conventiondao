@@ -71,8 +71,8 @@ public class SqlTemplateParseDTO extends BaseObject {
 	 */
 	public String getParseResult(){
 		if(logger.isDebugEnabled()){
-			logger.info("解析前:\n ["+template+"]");
-			logger.info("解析后:\n ["+templateAfterParse+"]");
+			// logger.debug("解析前:\n ["+template+"]");
+			logger.debug("解析后:\n ["+templateAfterParse+"]");
 		}
 		return templateAfterParse;
 	}

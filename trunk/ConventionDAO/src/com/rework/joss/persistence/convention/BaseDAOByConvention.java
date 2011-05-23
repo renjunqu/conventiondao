@@ -8,12 +8,15 @@
  */
 package com.rework.joss.persistence.convention;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -54,6 +57,7 @@ import com.rework.joss.persistence.convention.jdbctype.JdbcTypeHandlerFactory;
 import com.rework.joss.persistence.convention.strategy.SqlStrategyFactory;
 import com.rework.joss.persistence.convention.type.TypeHandler;
 import com.rework.joss.persistence.convention.type.TypeHandlerFactory;
+import com.sun.org.apache.bcel.internal.generic.LADD;
 
 import freemarker.template.Configuration;
 import freemarker.template.ObjectWrapper;
@@ -115,6 +119,8 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
     private String mappingFilePath;
     
     private Map<String, String> userSqlMap = null;
+    
+    private Long lastModifyTime = null;
 
 	private ORMappingSource metaSource;
 	
@@ -934,6 +940,16 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 		if(StringUtils.isNotBlank(criteria)){
 			paramMap.put(PARAM_CRITERIA, AND + criteria);
 		}
+		
+		if( null != object ){
+			if( object instanceof Map){
+				paramMap.putAll( (Map)object );
+			}
+			else if( object instanceof BaseObject){
+				paramMap.putAll( new BeanMap(object) );
+			}
+		}
+		
 		return excuteQueryCount("queryCountByCriteria", paramMap);
 	}
 	
@@ -1110,7 +1126,8 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 		return excuteQueryByPrepareStatementSqlTemplate(sqlTemplate, paramMap, elementType);
 	}
 	
-	private List excuteQueryByPrepareStatementSqlTemplate(final String sqlTemplate, final Map paramMap, final Class elementType){
+	private List excuteQueryByPrepareStatementSqlTemplate(String sqlTemplate, final Map paramMap, final Class elementType){
+        
 		String sqlBeforeParepareStatement = parse(sqlTemplate ,paramMap);
 		
 		String tableName = tableObject.getName();
@@ -1303,6 +1320,15 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	
 	private String parse(String templateStr, Object vObject) {
 
+		// 从sqlmap文件中取得sql
+        if( getUserSqlMap().containsKey( templateStr ) ) {
+        	String key = templateStr;
+        	templateStr = getUserSqlMap().get( templateStr );
+            logger.debug("从SQLMAP中获取sql模板:");
+            logger.debug("key:" + key );
+            logger.debug("sql:" + templateStr );
+        }
+		
 		Template t;
 		StringWriter stringWriter = new StringWriter();
 		Configuration cfg = new Configuration();
@@ -1368,11 +1394,6 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 		}
 		paramMap.putAll( initParamMap(paramObject, begin, interval) );
 		
-		// 从sqlmap文件中取得sql
-        if( getUserSqlMap().containsKey( sqlTemplate ) ) {
-            sqlTemplate = getUserSqlMap().get( sqlTemplate );
-        }
-
 		if(begin > 0 || interval > 0){
 			sqlTemplate = SqlStrategyFactory.getBean(getDataSource()).paginate(sqlTemplate);
 		}
@@ -1390,12 +1411,32 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
     private Map<String, String> getUserSqlMap() {
     	
     	InputStream input = null;
+    	if( null != this.userSqlMap ){
+	    	// 如果在调式模式下，那么判断是否文件进行过修改，如果修改过那么把sqlmap清空，重新加载
+	    	if( "true".equals(GlobalConfig.get("debug")) ){
+	    		URL url = getClass().getResource( getClass().getSimpleName() + ".sqlmap" );
+	    		if( null != url ){
+	    			Long currentLastmodify = new File( url.getPath() ).lastModified();
+	    			if( null != lastModifyTime ){
+	    				if( lastModifyTime.longValue() != currentLastmodify.longValue() ){
+	    					userSqlMap = null;
+	    				}
+	    			}else{
+	    				lastModifyTime = currentLastmodify;
+	    			}
+	    		}
+	    	}
+    	}
     	// 第一次访问的时候进行初始化
     	if( null == this.userSqlMap ){
     		userSqlMap = new HashMap();
     		try {
     			if(StringUtils.isBlank( this.mappingFilePath )){
-    				input = getClass().getResourceAsStream( getClass().getSimpleName() + ".sqlmap" );
+    				// input = getClass().getResourceAsStream( getClass().getSimpleName() + ".sqlmap" );
+    				URL url = getClass().getResource( getClass().getSimpleName() + ".sqlmap" );
+    	    		if( null != url ){
+    	    			input = new FileInputStream( url.getPath() );
+    	    		}
     			}else{
     				input = Thread.currentThread().getContextClassLoader().getResourceAsStream( this.mappingFilePath );
     			}
@@ -1418,13 +1459,13 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 							s = new StringBuffer();
 						} else if( ';' == status && chars[i] == status ){
 							status = '=';
-							userSqlMap.put(key.trim(), s.toString().trim());
+							userSqlMap.put( StringUtils.trim( key ), StringUtils.trim( s.toString() ) );
 							s = new StringBuffer();
 						}else{
 							s.append(chars[i]);
 						}
 					}
-					
+					input.close();
 				} catch (IOException e) {
 					logger.debug(" load sqlmapping file error! ");
 				}
