@@ -61,7 +61,8 @@ public class TiggerDAOTest extends BaseDAOTestCase {
 		
 		List list = tiggerDAO.queryByTpl(
 				"querybyname", 
-				ConventionUtils.toMap(new String[]{"name", "TESTNAME1"}));
+				ConventionUtils.toMap(new String[]{"name", "TESTNAME1"})
+				,1,8);
 		
 		list.size();;
 		

@@ -441,6 +441,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 			throw new RuntimeException("tbl是程序已经用到的关键字,请使用其它关键字!");
 		}
 		tempMap.put("tbl", rowObject);
+		
 		String sqlMap = parse(sqlTemplate, tempMap);
 		if(logger.isDebugEnabled()){
 			logger.info(sqlMap);
@@ -1123,6 +1124,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	
 	private List excuteQuery4Extend(final String sqlKey, final Map paramMap, final Class elementType){
 		String sqlTemplate = getSqlExtendByKey(sqlKey);
+		
 		return excuteQueryByPrepareStatementSqlTemplate(sqlTemplate, paramMap, elementType);
 	}
 	
@@ -1320,14 +1322,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	
 	private String parse(String templateStr, Object vObject) {
 
-		// 从sqlmap文件中取得sql
-        if( getUserSqlMap().containsKey( templateStr ) ) {
-        	String key = templateStr;
-        	templateStr = getUserSqlMap().get( templateStr );
-            logger.debug("从SQLMAP中获取sql模板:");
-            logger.debug("key:" + key );
-            logger.debug("sql:" + templateStr );
-        }
+		templateStr = processSqlmap(templateStr);
 		
 		Template t;
 		StringWriter stringWriter = new StringWriter();
@@ -1346,6 +1341,18 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 			throw new BaseRuntimeException("获取表达式内容出现异常", e);
 		}
 		return stringWriter.toString();
+	}
+
+	private String processSqlmap(String templateStr) {
+		// 从sqlmap文件中取得sql
+        if( getUserSqlMap().containsKey( templateStr ) ) {
+        	String key = templateStr;
+        	templateStr = getUserSqlMap().get( templateStr );
+            logger.debug("从SQLMAP中获取sql模板:");
+            logger.debug("key:" + key );
+            logger.debug("sql:" + templateStr );
+        }
+		return templateStr;
 	}
 	
 	public List queryByTpl(String sqlTemplate){
@@ -1389,6 +1396,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 
 	public List queryByTpl(String sqlTemplate, Object paramObject, Map paramMap, DTOCallbackHandler callbackHandler, int begin, int interval) {
+		sqlTemplate = processSqlmap(sqlTemplate);
 		if(null == paramMap){ 
 			paramMap = new HashMap(); 
 		}
@@ -1518,6 +1526,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 
 	public Object queryForObjectByTpl(String sqlTemplate, Object paramObject, Class requireType) {
+		sqlTemplate = processSqlmap(sqlTemplate);
 		Map paramMap = initParamMap(paramObject, -1, -1);
 		
 		List results = excuteQueryByPrepareStatementSqlTemplate(sqlTemplate, paramMap, requireType);
@@ -1525,6 +1534,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 	
 	public List queryForListByTpl(String sqlTemplate, Object paramObject, Class requireType) {
+		sqlTemplate = processSqlmap(sqlTemplate);
 		Map paramMap = initParamMap(paramObject, -1, -1);
 		
 		List results = excuteQueryByPrepareStatementSqlTemplate(sqlTemplate, paramMap, requireType);
@@ -1532,6 +1542,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 	
 	public List queryForListByTpl(String sqlTemplate, Object paramObject, Class requireType, int begin, int interval) {
+		sqlTemplate = processSqlmap(sqlTemplate);
 		Map paramMap = initParamMap(paramObject, begin, interval);
 		if(begin > 0 || interval > 0){
 			sqlTemplate = SqlStrategyFactory.getBean(getDataSource()).paginate(sqlTemplate);
@@ -1554,6 +1565,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 
 	public Integer queryCountByTpl(String sqlTemplate) {
+		sqlTemplate = processSqlmap(sqlTemplate);
 		if(!sqlTemplate.toUpperCase().trim().startsWith("SELECT")){
 			String tableName = tableObject.getName();
 			sqlTemplate = " SELECT count(*) FROM " + tableName + " " + sqlTemplate;

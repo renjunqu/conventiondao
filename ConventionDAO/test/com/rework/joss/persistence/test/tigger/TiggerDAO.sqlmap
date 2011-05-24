@@ -1,6 +1,12 @@
-querybyname=select *from dao_test where testname = #${name}#;
 querybyid=
 	select *from dao_test
 	where testname = #${id}#;
+querybyid2=
+	select *from dao_test
+	where testname = #${id}#;
+querybyname=select *from dao_test where testname = #${name}#;
 	
+querybyid3=
+	select *from dao_test
+	where testname = #${id}#;
 	
