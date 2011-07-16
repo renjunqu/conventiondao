@@ -57,6 +57,22 @@
                   )
                 ]]> 
               </prop>
+              <prop key="createsForMysql">
+                <![CDATA[
+                  insert into ${tbl.dbo.name} (  
+                  <#list tbl.columnsWithNotNullValue as x>
+                    ${x.name}<#if x_has_next>,</#if>
+                  </#list>  
+                  )values
+                  <#list values as v>
+	                  (
+	                  <#list tbl.columnsWithNotNullValue as x>
+	                      ? <#if x_has_next>,</#if>
+	                  </#list>
+	                  )<#if v_has_next>,</#if>
+                  </#list>
+                ]]> 
+              </prop>
               <prop key="update">
                 <![CDATA[
                   update ${tbl.dbo.name}
