@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -22,6 +23,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -48,15 +50,19 @@ import com.rework.core.dto.BaseObject;
 import com.rework.joss.persistence.IBaseDAO;
 import com.rework.joss.persistence.convention.annotation.DAO;
 import com.rework.joss.persistence.convention.annotation.Fetch;
+import com.rework.joss.persistence.convention.db.Constants;
+import com.rework.joss.persistence.convention.db.DBFactory;
 import com.rework.joss.persistence.convention.db.IJdbcTypeRegistry;
 import com.rework.joss.persistence.convention.db.model.ColumnBean;
 import com.rework.joss.persistence.convention.db.model.RuntimeRowObject;
 import com.rework.joss.persistence.convention.db.model.TableBean;
 import com.rework.joss.persistence.convention.id.IdGenerator;
 import com.rework.joss.persistence.convention.jdbctype.JdbcTypeHandlerFactory;
+import com.rework.joss.persistence.convention.strategy.MysqlSqlStrategy;
 import com.rework.joss.persistence.convention.strategy.SqlStrategyFactory;
 import com.rework.joss.persistence.convention.type.TypeHandler;
 import com.rework.joss.persistence.convention.type.TypeHandlerFactory;
+import com.rework.utils.UtilMisc;
 import com.sun.org.apache.bcel.internal.generic.LADD;
 
 import freemarker.template.Configuration;
@@ -581,6 +587,10 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	 * @param argTypes
 	 * @return
 	 */
+	private boolean isExistsClobColumn(Integer[] argTypes) {
+		return ArrayUtils.indexOf(argTypes, Types.CLOB) >= 0;
+	}
+	
 	private boolean isExistsClobColumn(int[] argTypes) {
 		return ArrayUtils.indexOf(argTypes, Types.CLOB) >= 0;
 	}
@@ -775,6 +785,51 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 			return;
 		for(int i = 0; i < dtos.length; i++){
 			create(dtos[i]);
+		}
+		
+		
+		for(int i = 0; i < dtos.length; i++){
+			Object pkValue = null;
+			try{
+				pkValue = getPkValue(dtos[i]);
+			}catch(Exception ex){
+				//ignore
+			}
+			if(pkValue == null || StringUtils.isEmpty(pkValue.toString())) {
+				if(null != generator){
+					setPkValue(dtos[i], generator.id()); 
+				}
+			}
+		}
+		// mysql的情况下,有更简便高效的处理方法
+		String type = DBFactory.getDBType(this.getDataSource());
+		if(Constants.MYSQL.equals(type)){
+		
+			RuntimeRowObject row = mixDbAndPojo(dtos[0]);
+			String sql = getSqlTemplate("createsForMysql");
+			String prepareStatSql = initSqlMapByKey(sql, row, UtilMisc.toMap("values", dtos));
+			
+			List argsList = new ArrayList();
+			List argTypesList = new ArrayList();
+			for(int i = 0; i < dtos.length; i++){
+				SqlArgTypeSetter argTypeSetter = ConventionUtils.getPropertyValuesIgnoreNull(dtos[i], this.tableObject, jdbcTypeHandlerFactory, this.conventionStrategy);
+				if(logger.isDebugEnabled())
+					logger.info("args["+StringUtils.join(argTypeSetter.getArgs(),",")+"]");
+				
+				argsList.add( argTypeSetter.getArgs() );
+				argTypesList.addAll( Arrays.asList( argTypeSetter.getArgTypes() ) );
+			}
+			
+			Object[] argsArray = argsList.toArray( );
+			Integer[] intArgTypes = (Integer[]) argTypesList.toArray( new Integer[0] );
+			
+			if(isExistsClobColumn( intArgTypes )){
+				//clob型需要特殊处理
+				getJdbcTemplate().update(prepareStatSql, argsArray, intArgTypes);
+			}else{
+				getJdbcTemplate().update(prepareStatSql, argsArray);
+			}
+			
 		}
 	}
 	
