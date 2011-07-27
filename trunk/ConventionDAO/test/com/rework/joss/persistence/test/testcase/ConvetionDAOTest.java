@@ -18,6 +18,7 @@ import junit.framework.Assert;
 import com.rework.joss.persistence.IBaseDAO;
 import com.rework.joss.persistence.test.BaseDAOTestCase;
 import com.rework.joss.persistence.test.biz.GyXjStudentDTO;
+import com.rework.utils.UUIDHexGenerator;
 
 public class ConvetionDAOTest extends BaseDAOTestCase {
 	IBaseDAO xgStudentDAO;
@@ -53,6 +54,19 @@ public class ConvetionDAOTest extends BaseDAOTestCase {
 		GyXjStudentDTO student = getTestStudentDTO();
 		student.setXh("2005013308");
 		xgStudentDAO.create(student);
+	}
+	
+	public void testInserts(){
+		GyXjStudentDTO student = getTestStudentDTO();
+		student.setXh("2005013308");
+		
+		GyXjStudentDTO student2 = getTestStudentDTO();
+		student2.setXh("2005013308");
+		
+		GyXjStudentDTO student3 = getTestStudentDTO();
+		student3.setXh("2005013308");
+		
+		xgStudentDAO.create(new GyXjStudentDTO[]{student, student3, student2});
 	}
 	
 	public void testFindById(){
