@@ -64,11 +64,9 @@
                     ${x.name}<#if x_has_next>,</#if>
                   </#list>  
                   )values
-                  <#list values as v>
+                  <#list 1..valuescount as v>
 	                  (
-	                  <#list tbl.columnsWithNotNullValue as x>
-	                      ? <#if x_has_next>,</#if>
-	                  </#list>
+	                  <#list tbl.columnsWithNotNullValue as x>? <#if x_has_next>,</#if></#list>
 	                  )<#if v_has_next>,</#if>
                   </#list>
                 ]]> 

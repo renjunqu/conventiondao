@@ -783,10 +783,6 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	public void create(BaseObject[] dtos) {
 		if(dtos == null || dtos.length < 1)
 			return;
-		for(int i = 0; i < dtos.length; i++){
-			create(dtos[i]);
-		}
-		
 		
 		for(int i = 0; i < dtos.length; i++){
 			Object pkValue = null;
@@ -807,21 +803,18 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 		
 			RuntimeRowObject row = mixDbAndPojo(dtos[0]);
 			String sql = getSqlTemplate("createsForMysql");
-			String prepareStatSql = initSqlMapByKey(sql, row, UtilMisc.toMap("values", dtos));
+			String prepareStatSql = initSqlMapByKey(sql, row, UtilMisc.toMap("valuescount", dtos.length ));
 			
-			List argsList = new ArrayList();
-			List argTypesList = new ArrayList();
+			Object[] argsArray = new Object[]{};
+			int[] intArgTypes = new int[]{};
 			for(int i = 0; i < dtos.length; i++){
 				SqlArgTypeSetter argTypeSetter = ConventionUtils.getPropertyValuesIgnoreNull(dtos[i], this.tableObject, jdbcTypeHandlerFactory, this.conventionStrategy);
 				if(logger.isDebugEnabled())
 					logger.info("args["+StringUtils.join(argTypeSetter.getArgs(),",")+"]");
 				
-				argsList.add( argTypeSetter.getArgs() );
-				argTypesList.addAll( Arrays.asList( argTypeSetter.getArgTypes() ) );
+				argsArray = ArrayUtils.addAll( argsArray , argTypeSetter.getArgs() );
+				intArgTypes = ArrayUtils.addAll( intArgTypes , argTypeSetter.getArgTypes() );
 			}
-			
-			Object[] argsArray = argsList.toArray( );
-			Integer[] intArgTypes = (Integer[]) argTypesList.toArray( new Integer[0] );
 			
 			if(isExistsClobColumn( intArgTypes )){
 				//clob型需要特殊处理
@@ -830,6 +823,10 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 				getJdbcTemplate().update(prepareStatSql, argsArray);
 			}
 			
+		}else{
+			for(int i = 0; i < dtos.length; i++){
+				create(dtos[i]);
+			}
 		}
 	}
 	
