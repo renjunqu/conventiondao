@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
@@ -1380,6 +1381,8 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 		StringWriter stringWriter = new StringWriter();
 		Configuration cfg = new Configuration();
 		cfg.setObjectWrapper(ObjectWrapper.BEANS_WRAPPER);
+		cfg.setEncoding(Locale.getDefault(), "GBK");
+		
 		try {
 			//freemarker在解析数据格式的时候，自动默认将数字按3为分割（1，000），需要禁用掉
 			String disableNumberParserStr = "<#setting number_format=\"#\">";
