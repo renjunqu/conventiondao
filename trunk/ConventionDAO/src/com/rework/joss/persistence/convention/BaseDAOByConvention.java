@@ -1507,7 +1507,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
         		logger.debug(" no sqlmapping file find! ");
             }else{
             	try {
-					char[] chars = IOUtils.toCharArray(input);
+					char[] chars = IOUtils.toCharArray(input, "UTF-8");
 					StringBuffer s = new StringBuffer();
 					
 					char status = '=';
