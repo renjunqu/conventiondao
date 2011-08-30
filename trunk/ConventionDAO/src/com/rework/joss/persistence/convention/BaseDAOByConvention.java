@@ -1477,8 +1477,12 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
     	if( null != this.userSqlMap ){
 	    	// 如果在调式模式下，那么判断是否文件进行过修改，如果修改过那么把sqlmap清空，重新加载
 	    	if( "true".equals(GlobalConfig.get("debug")) ){
+	    		
+	    		
+	    		
 	    		URL url = getClass().getResource( getClass().getSimpleName() + ".sqlmap" );
-	    		if( null != url ){
+	    		// 有并且不在jar包中
+	    		if( null != url && url.getFile().indexOf(".jar") < 0 ){
 	    			Long currentLastmodify = new File( url.getPath() ).lastModified();
 	    			if( null != lastModifyTime ){
 	    				if( lastModifyTime.longValue() != currentLastmodify.longValue() ){
@@ -1496,10 +1500,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
     		try {
     			if(StringUtils.isBlank( this.mappingFilePath )){
     				// input = getClass().getResourceAsStream( getClass().getSimpleName() + ".sqlmap" );
-    				URL url = getClass().getResource( getClass().getSimpleName() + ".sqlmap" );
-    	    		if( null != url ){
-    	    			input = new FileInputStream( url.getPath() );
-    	    		}
+    				input = getClass().getResourceAsStream( getClass().getSimpleName() + ".sqlmap" );
     			}else{
     				input = Thread.currentThread().getContextClassLoader().getResourceAsStream( this.mappingFilePath );
     			}
