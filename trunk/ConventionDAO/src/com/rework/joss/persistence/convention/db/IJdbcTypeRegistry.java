@@ -83,7 +83,12 @@ public class IJdbcTypeRegistry {
 		}
 	}
 
-	public static String getIbatisType(int jdbcType) {
+	/**
+	 * 得到jdbc data_type
+	 * @param jdbcType
+	 * @return
+	 */
+	public static String getDataType(int jdbcType) {
 		return (String) JDBC_TYPE_MAP.get(new Integer(jdbcType));
 	}
 
@@ -178,5 +183,5 @@ public class IJdbcTypeRegistry {
 		JAVA_TYPE_MAP.put(String.valueOf(Types.BLOB), String.class.getName());
 		JAVA_TYPE_MAP.put(String.valueOf(Types.CLOB), String.class.getName());
 	}
-
+	
 }

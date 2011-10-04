@@ -275,7 +275,7 @@ public class ColumnBean {
 	
 
 	public String getIbatisType() {
-		ibatisType = IJdbcTypeRegistry.getIbatisType(getJdbcType());
+		ibatisType = IJdbcTypeRegistry.getDataType(getJdbcType());
 		if("NULL".equals(ibatisType)){
 			ibatisType = getDataType();
 			if(null != ibatisType){
