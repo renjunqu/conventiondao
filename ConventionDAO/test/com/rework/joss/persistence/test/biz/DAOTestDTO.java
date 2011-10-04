@@ -9,9 +9,11 @@
 package com.rework.joss.persistence.test.biz;
 
 import java.sql.Date;
+import java.sql.Types;
 import java.util.List;
 
 import com.rework.core.dto.BaseObject;
+import com.rework.joss.persistence.convention.annotation.DBColumn;
 import com.rework.joss.persistence.convention.annotation.Fetch;
 import com.rework.joss.persistence.test.tigger.TiggerDAO;
 
@@ -23,6 +25,13 @@ public class DAOTestDTO extends BaseObject{
 	private String testname;
 	private Integer testint;
 	private Date testdate;
+	
+	
+	@DBColumn(comment="新增加的字段", columnType = Types.VARCHAR, length = 200)
+	private String newcolumn;
+	
+	@DBColumn(columnName="new_column2", length=10, comment="新增加的字段", defaultValue="20", columnType = Types.INTEGER)
+	private Integer newcolumn2;
 	
 	private String bigtext;
 	
@@ -103,6 +112,22 @@ public class DAOTestDTO extends BaseObject{
 
 	public void setBigtext(String bigtext) {
 		this.bigtext = bigtext;
+	}
+
+	public String getNewcolumn() {
+		return newcolumn;
+	}
+
+	public void setNewcolumn(String newcolumn) {
+		this.newcolumn = newcolumn;
+	}
+
+	public Integer getNewcolumn2() {
+		return newcolumn2;
+	}
+
+	public void setNewcolumn2(Integer newcolumn2) {
+		this.newcolumn2 = newcolumn2;
 	}
 	
 	

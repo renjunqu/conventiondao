@@ -201,6 +201,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 		conventionStrategy = new ConvetionStrategyApplyColMap(conventionStrategy, colMap);
 		// TODO tableObject 初始化了两次
 		tableObject = metaSource.getTableMetaData( dbo);
+		
 	}
 	
 	public void setDbo(String dbo) {
@@ -357,7 +358,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 		// 将数据库中得到的数据转换成属性的数据(使用typeHandlerFactory进行类型转换)
 		
 		TypeHandler th = typeHandlerFactory
-			.getTypeHandler( propertyType, IJdbcTypeRegistry.getIbatisType(jdbcType) );
+			.getTypeHandler( propertyType, IJdbcTypeRegistry.getDataType(jdbcType) );
 		Object propValue = th.getResult( rs, colName.toUpperCase() );
 		PropertyUtils.setProperty(targetObject, propName, propValue);
 		if(logger.isTraceEnabled()){
@@ -886,11 +887,27 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 		getJdbcTemplate().update(sql,new Object[]{id});
 	}
 	
+	public void remove(Integer id){
+		String sqlTemplate = getSqlTemplate("removeById");
+		String sql = initSqlMapByKey(sqlTemplate, mixDbAndPojo(null), null);
+		getJdbcTemplate().update(sql,new Object[]{id});
+	}
+	
 	public void remove(String[] ids) {
 		if(ids == null || ids.length < 1)
 			return;
 		for(int i = 0; i < ids.length; i++){
 			if(StringUtils.isNotBlank(ids[i])){
+				remove(ids[i]);
+			}
+		}
+	}
+	
+	public void remove(Integer[] ids) {
+		if(ids == null || ids.length < 1)
+			return;
+		for(int i = 0; i < ids.length; i++){
+			if( null != ids[i] ){
 				remove(ids[i]);
 			}
 		}
