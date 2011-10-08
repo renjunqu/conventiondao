@@ -30,7 +30,7 @@ public @interface DBColumn {
 
 	boolean primaryKey() default false;
 
-	boolean nullable() default false;
+	boolean nullable() default true;
 
 	boolean autoincrement() default false;
 
