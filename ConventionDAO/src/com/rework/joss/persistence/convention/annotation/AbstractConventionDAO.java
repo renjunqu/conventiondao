@@ -19,6 +19,8 @@ import com.rework.joss.persistence.convention.BaseDAOByConvention;
 import com.rework.joss.persistence.convention.BaseRuntimeException;
 import com.rework.joss.persistence.convention.ConventionUtils;
 import com.rework.joss.persistence.convention.ORMappingSource;
+import com.rework.joss.persistence.convention.db.DBFactory;
+import com.rework.joss.persistence.convention.db.IDBFacade;
 import com.rework.joss.persistence.convention.db.model.ColumnBean;
 import com.rework.joss.persistence.convention.db.model.TableBean;
 import com.rework.joss.persistence.convention.id.IdGenerator;
@@ -61,12 +63,14 @@ public class AbstractConventionDAO extends BaseDAOByConvention{
             setMappingFilePath( dao.mappingFile() );
         }
         
+        
+        
         super.initStrategy();
 		super.setMetaSource(metaSource);
 		super.setDataSource(metaSource.getDataSource());
 		
-        
         // 判断这个表是否存在
+		/*
         try {
 			ResultSet rs = getConnection().getMetaData().getTables(null, null, dao.table(), new String[]{ "TABLE", "VIEW" });
 			if( rs.next() ){
@@ -79,6 +83,11 @@ public class AbstractConventionDAO extends BaseDAOByConvention{
 			throw new BaseRuntimeException(e.getMessage());
 		} finally {
 			DataSourceUtils.releaseConnection(getConnection(), getDataSource());
+		}
+		*/
+		// 在预加载的模式下，使用这种方式判断
+		if( metaSource.isTableExist(dao.table()) ){
+			tableName = dao.table();
 		}
         
         if( tableName != null ){
@@ -97,7 +106,7 @@ public class AbstractConventionDAO extends BaseDAOByConvention{
 						TableBean table = metaSource.getTableMetaData( tableName );
 						ColumnBean columnDatabase = table.getColumn( columnName );
 						if( columnDatabase != null ){
-							
+							/*
 							Column modify = new Column(
 									columnName, 
 									column.columnType(), 
@@ -107,13 +116,31 @@ public class AbstractConventionDAO extends BaseDAOByConvention{
 									column.defaultValue(), 
 									column.autoincrement() 
 									);
+							*/
+							Column modify = new Column(
+									columnName, 
+									column.columnType()
+									);
 							if( column.length() != columnDatabase.getSize() ){
+								modify.setLength( column.length() );
 								isModified = true;
 							}
 							if( column.nullable() != columnDatabase.isNull() ){
+								modify.setNullable( column.nullable() );
 								isModified = true;
 							}
+							if( column.autoincrement() != columnDatabase.isAutoincrement() ){
+								modify.setAutoIncrement( true );
+								isModified = true;
+							}
+							
 							if( column.primaryKey() != columnDatabase.isPrimaryKey() ){
+								if( column.primaryKey() ){
+									modify.setPrimaryKey(true);
+								}else{
+									Execute.dropColumn(columnName, table.getName());
+								}
+								
 								isModified = true;
 							}
 							if( isModified ){
@@ -181,7 +208,7 @@ public class AbstractConventionDAO extends BaseDAOByConvention{
             	isModified = true;
             }
         }
-		// 如果新加了表，或者修改了字段 
+        // 如果新加了表，或者修改了字段 
 		if( isModified ){
 			// 重新加载
 			super.init();

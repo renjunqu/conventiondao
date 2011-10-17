@@ -1,11 +1,16 @@
 package com.rework.joss.persistence.test.biz;
 
+import java.sql.Types;
+
 import com.rework.core.dto.BaseObject;
+import com.rework.joss.persistence.convention.annotation.DBColumn;
 
 public class JoinTestDTO extends BaseObject{
 
+	@DBColumn( columnType=Types.VARCHAR, length=32, primaryKey=true, nullable=false )
 	private String testId;
 	
+	@DBColumn( columnType=Types.VARCHAR, length=100 )
 	private String joinColumn;
 
 	public String getTestId() {

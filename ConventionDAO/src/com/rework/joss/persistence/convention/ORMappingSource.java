@@ -58,6 +58,13 @@ public class ORMappingSource {
 		return table;
 	}
 	
+	public boolean isTableExist(String tablename){
+		if( null != container && container.hasTable(tablename) ){
+			return true;
+		} 
+		return false;
+	}
+	
 	public TableBean getTableMetaData( String dbo) {
 		// 如果没有被自动注入,说明没有定义预加载container
 		if(null == container){

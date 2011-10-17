@@ -1,8 +1,8 @@
-﻿package com.rework.joss.persistence.convention.db;
+package com.rework.joss.persistence.convention.db;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,10 +12,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.util.Assert;
 
 import com.rework.joss.persistence.convention.ConventionUtils;
-import com.rework.joss.persistence.convention.ORMappingSource;
 import com.rework.joss.persistence.convention.db.model.ColumnBean;
 import com.rework.joss.persistence.convention.db.model.Container;
 import com.rework.joss.persistence.convention.db.model.TableBean;
@@ -29,23 +29,34 @@ import com.rework.joss.persistence.convention.db.model.TableBean;
  * @author kevin
  * 
  */
-public class DBFacadeOracle implements IDBFacade {
+public class DBFacadeMysql implements IDBFacade {
 	
-	private static Log log = LogFactory.getLog(DBFacadeOracle.class);
+	private static Log log = LogFactory.getLog(DBFacadeMysql.class);
 
 	private DataSource dataSource;
 	
-	public DBFacadeOracle(DataSource dataSource) {
+	public DBFacadeMysql(DataSource dataSource) {
 		this.dataSource = dataSource;
 	}
 
+	private String getSchemaName(){
+		
+		Connection conn = null;
+		try {
+			conn = this.dataSource.getConnection();
+			return conn.getCatalog();
+		} catch (SQLException e) {
+			throw new DataAccessException(e);
+		} finally {
+			DataSourceUtils.releaseConnection(conn, dataSource);
+		}
+	}
 	
-
 	private void initTablesType(final TableBean dbTable) {
 
-		String sql = " select o.object_name, o.object_type from user_objects o "
-			+ " where (o.object_type = 'TABLE' or o.object_type = 'VIEW')"
-			+ " and o.object_name = ?";
+		String sql = "select 'TABLE' as object_type from tables where table_type = 'BASE TABLE' and table_schema = '"+ getSchemaName() +"' and table_name = ?"+ 
+					 "union all" +
+					 "select 'VIEW' as object_type from views where table_schema = '"+ getSchemaName() +"' and table_name = ?";
 		query(sql, new String[] { dbTable.getName().toUpperCase() },
 				new RowMapperCallback() {
 
@@ -89,17 +100,8 @@ public class DBFacadeOracle implements IDBFacade {
 	 */
 	private void readTableColumns(final TableBean table) {
 
-		String sql = "select com.column_name "+
-					       ",com.comments"+
-					       ",col.TABLE_NAME"+
-					       ",col.DATA_TYPE"+
-					       ",col.NULLABLE"+
-					       ",col.CHAR_LENGTH"+
-					       ",col.DATA_SCALE "+ 
-					  "from user_tab_columns col "+
-					 "inner join user_col_comments com on col.COLUMN_NAME = com.column_name and col.TABLE_NAME = com.table_name "+
-					 "where col.TABLE_NAME = ?";
-		
+		String sql = "select c.column_name,c.column_comment,c.table_name,c.data_type,c.is_nullable,c.character_maximum_length,c.numeric_scale " +
+				" from columns c where c.table_schema = '"+ getSchemaName() +"' and table_name = ?";
 		query(sql, new String[]{table.getName().toUpperCase()}, new RowMapperCallback() {
 
 
@@ -129,9 +131,8 @@ public class DBFacadeOracle implements IDBFacade {
 	 * @throws SQLException
 	 */
 	private void readTableKeys(final TableBean table) {
-		String sql = "select cs.table_name, cc.column_name  from " +
-				"user_constraints cs join user_cons_columns cc on cs.constraint_name = cc.constraint_name " +
-				"where cs.table_name like ? and cs.constraint_type = 'P'";
+		String sql = "select c.table_name, c.column_name from columns c " +
+				"where c.table_schema = '"+ getSchemaName() +"' and table_name = ? and column_key = 'PRI';";
 		query(sql , new String[]{table.getName().toUpperCase()}, new RowMapperCallback() {
 
 			public Object processRow(ResultSet rs) throws SQLException {
