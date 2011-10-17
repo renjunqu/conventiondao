@@ -45,7 +45,7 @@ public class ColumnBean {
 	private String dataType;
 
 	// 大小
-	private int size;
+	private long size;
 
 	private int digits;
 
@@ -55,6 +55,8 @@ public class ColumnBean {
 
 	// 是否是主键
 	boolean primaryKey;
+	
+	boolean isAutoincrement;
 
 	ColumnBean fkParentKey;
 
@@ -69,10 +71,12 @@ public class ColumnBean {
 			String name,
 			String dataType, 
 			int jdbcType,
-			int size, 
+			long size, 
 			int digits, 
 			int nullable,
-			String metaData) {
+			String metaData,
+			boolean isAutoCrement
+			) {
 		super();
 		this.jdbcType = jdbcType;
 		this.table = table;
@@ -173,7 +177,7 @@ public class ColumnBean {
 	/**
 	 * Return the size of the column
 	 */
-	public int getSize() {
+	public long getSize() {
 		return size;
 	}
 
@@ -337,6 +341,16 @@ public class ColumnBean {
 	}
 	
 	
+	public boolean isAutoincrement() {
+		return isAutoincrement;
+	}
+
+
+	public void setAutoincrement(boolean isAutoincrement) {
+		this.isAutoincrement = isAutoincrement;
+	}
+
+
 	public Object clone(){
 		return new ColumnBean(
 				this.table, 
@@ -346,7 +360,8 @@ public class ColumnBean {
 				this.size, 
 				this.digits, 
 				this.nullable,
-				this.metaData);
+				this.metaData,
+				this.isAutoincrement);
 	}
 	
 }

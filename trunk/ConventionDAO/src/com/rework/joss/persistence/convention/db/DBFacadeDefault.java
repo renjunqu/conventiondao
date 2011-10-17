@@ -38,101 +38,7 @@ public class DBFacadeDefault implements IDBFacade {
 		this.dataSource = dataSource;
 	}
 
-	/**
-	 * Return the number of tables that match the schema pattern and table
-	 * pattern given
-	 * 
-	 * @param metadata
-	 * @param schemaPattern
-	 * @param tablePattern
-	 * @return the number of tables
-	 * @throws SQLException
-	 */
-	private int getTableCount(final String schemaPattern,
-			final String tablePattern) {
 
-		final List num = new ArrayList();
-		final String TABLE_TYPE = "TABLE_TYPE";
-		final String SYSTEM = "SYSTEM";
-		metaDataOperation(new MetadataCallback() {
-
-			public ResultSet retrieveResutSetFromMetadata(
-					DatabaseMetaData metaData) throws SQLException {
-				String[] names = { "TABLE" };
-				String schema = null;
-				String tableName = null;
-				if (null != schemaPattern && schemaPattern.trim().length() > 0)
-					schema = schemaPattern.trim();
-				else
-					schema = getDefaltSchemaName(metaData);
-				if (null != tablePattern && tablePattern.trim().length() > 0)
-					tableName = tablePattern.trim();
-				else
-					tableName = null;
-				return metaData.getTables(null, schema, tableName, names);
-			}
-
-			public void processRow(ResultSet rs) throws SQLException {
-				String tableType = rs.getString(TABLE_TYPE);
-				if (null == tableType
-						|| tableType.toUpperCase().indexOf(SYSTEM) < 0) {
-					Integer n = (Integer) num.get(0);
-					num.add(new Integer(n.intValue() + 1));
-				}
-
-			}
-		});
-
-		return ((Integer) num.get(0)).intValue();
-	}
-
-	/**
-	 * Load the container with table objects that only contain the name. Start
-	 * the thread or call populateTableData to load the columns and keys.
-	 * 
-	 * @param container
-	 * @param metadata
-	 * @param schemaPattern
-	 * @param tablePattern
-	 * @throws SQLException
-	 */
-	private void getTables(final Container container,
-			final String schemaPattern, final String tablePattern) {
-		final String TABLE_NAME = "TABLE_NAME";
-		final String TABLE_TYPE = "TABLE_TYPE";
-		final String SYSTEM = "SYSTEM";
-		metaDataOperation(new MetadataCallback() {
-
-			public ResultSet retrieveResutSetFromMetadata(
-					DatabaseMetaData metaData) throws SQLException {
-				String[] names = { "TABLE" };
-				String schema = null;
-				String tableName = null;
-				if (null != schemaPattern && schemaPattern.trim().length() > 0)
-					schema = schemaPattern.trim();
-				else
-					schema = getDefaltSchemaName(metaData);
-				if (null != tablePattern && tablePattern.trim().length() > 0)
-					tableName = tablePattern.trim();
-				else
-					tableName = null;
-				return metaData.getTables(null, schema, tableName, names);
-
-			}
-
-			public void processRow(ResultSet rs) throws SQLException {
-
-				TableBean table = new TableBean(rs.getString(TABLE_NAME));
-				String tableType = rs.getString(TABLE_TYPE);
-				if (null == tableType
-						|| tableType.toUpperCase().indexOf(SYSTEM) < 0) {
-					container.addTable(table.getName().toUpperCase(), table);
-				}
-
-			}
-		});
-
-	}
 
 	/**
 	 * Populate the column and key information for the tables.
@@ -181,9 +87,14 @@ public class DBFacadeDefault implements IDBFacade {
 				int datasize = columns.getInt("COLUMN_SIZE");
 				int digits = columns.getInt("DECIMAL_DIGITS");
 				int nullable = columns.getInt("NULLABLE");
+				String isAuto = columns.getString("IS_AUTOINCREMENT");
+				boolean isAutocrement = false;
+				if( null != isAuto && "YES".equals(isAuto.toUpperCase()) ){
+					isAutocrement = true;
+				}
 				
 				String remark = columns.getString("REMARKS");
-				ColumnBean newColumn = new ColumnBean(table, columnName, datatype, jdbcType, datasize, digits, nullable, remark);
+				ColumnBean newColumn = new ColumnBean(table, columnName, datatype, jdbcType, datasize, digits, nullable, remark, isAutocrement);
 				table.notifyColumn(newColumn);
 
 			}
