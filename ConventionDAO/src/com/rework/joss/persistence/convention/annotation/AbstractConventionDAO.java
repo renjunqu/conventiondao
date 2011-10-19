@@ -173,6 +173,7 @@ public class AbstractConventionDAO extends BaseDAOByConvention{
         	}
         	
         }else{
+        	// 创建表
         	tableName = dao.table();
             for (int i = 0; i < dao.pojo().getDeclaredFields().length; i++) {
 				Field f = dao.pojo().getDeclaredFields()[i];
@@ -199,6 +200,7 @@ public class AbstractConventionDAO extends BaseDAOByConvention{
 					}
 				}
 			}
+            // 如果 没有定义任何的dbcolumn那么不创建
             if( columns.size() > 0 ){
             	try{
             	Execute.createTable(getConnection(), new Table(tableName, (Column[]) columns.toArray(new Column[0])));

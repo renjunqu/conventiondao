@@ -98,7 +98,7 @@ public class PreLoadContainerMysqlFactory implements FactoryBean {
 			jdt.query(preLoadSql, new RowCallbackHandler(){
 				
 				public void processRow(ResultSet columns) throws SQLException  {
-					String tableName = columns.getString("table_name");
+					String tableName = columns.getString("table_name").toUpperCase();
 					TableBean dbTable = getTableFromContainer(container, tableName);
 					String columnName = columns.getString("COLUMN_NAME");
 					String datatype = columns.getString("data_type");
