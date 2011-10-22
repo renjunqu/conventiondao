@@ -125,10 +125,13 @@ public class AbstractConventionDAO extends BaseDAOByConvention{
 								modify.setLength( column.length() );
 								isModified = true;
 							}
-							if( column.nullable() != columnDatabase.isNull() ){
+							
+							// not primary key 
+							if( !column.primaryKey() && column.nullable() != columnDatabase.isNull() ){
 								modify.setNullable( column.nullable() );
 								isModified = true;
 							}
+							
 							if( column.autoincrement() != columnDatabase.isAutoincrement() ){
 								modify.setAutoIncrement( true );
 								isModified = true;
@@ -136,8 +139,11 @@ public class AbstractConventionDAO extends BaseDAOByConvention{
 							
 							if( column.primaryKey() != columnDatabase.isPrimaryKey() ){
 								if( column.primaryKey() ){
-									modify.setPrimaryKey(true);
-								}else{
+									modify.setPrimaryKey( true );
+									modify.setNullable( false );
+								}
+								// 数据库中是主键，但是pojo定义不是
+								else if(columnDatabase.isPrimaryKey()){
 									Execute.dropColumn(columnName, table.getName());
 								}
 								
