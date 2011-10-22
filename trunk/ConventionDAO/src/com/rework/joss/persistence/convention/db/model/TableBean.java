@@ -211,7 +211,9 @@ public class TableBean implements Comparable,Cloneable {
 	public void notifyPrimaryKey (String columnName) {
 		ColumnBean column = (ColumnBean) columnMap.get(columnName.toUpperCase());
 		if (null != column && columnMap.containsKey(columnName.toUpperCase())) {
-			if (null == pKeys) pKeys = new HashMap();
+			if (null == pKeys) {
+				pKeys = new HashMap();
+			}
 			pKeys.put(column.getName(), column);
 			column.primaryKey = true;
 		}
