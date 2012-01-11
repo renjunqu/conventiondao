@@ -7,7 +7,7 @@ import com.rework.joss.persistence.convention.annotation.DBColumn;
 
 public class JoinTestDTO extends BaseObject{
 
-	@DBColumn( columnType=Types.VARCHAR, length=32, primaryKey=true, nullable=false )
+	@DBColumn( columnName="id", columnType=Types.VARCHAR, length=32, primaryKey=true, nullable=false )
 	private String testId;
 	
 	@DBColumn( columnType=Types.VARCHAR, length=100 )
