@@ -139,13 +139,15 @@ public class AbstractConventionDAO extends BaseDAOByConvention{
 							
 							if( column.primaryKey() != columnDatabase.isPrimaryKey() ){
 								if( column.primaryKey() ){
-									modify.setPrimaryKey( true );
+									modify.setPrimaryKey(true);
+									modify.setLength( column.length() );
 									modify.setNullable( false );
 								}
 								// 数据库中是主键，但是pojo定义不是
 								else if(columnDatabase.isPrimaryKey()){
 									Execute.dropColumn(columnName, table.getName());
 								}
+								
 								
 								isModified = true;
 							}
