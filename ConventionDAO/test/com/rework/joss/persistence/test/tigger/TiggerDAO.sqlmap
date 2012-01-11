@@ -4,8 +4,11 @@ querybyid=
 querybyid2=
 	select *from dao_test
 	where testname = #${id}#;
+/*注释*/
 querybyname=select *from dao_test where testname = #${name}#;
-	
+querybynameGBK=select *from dao_test where testname = '中文';	
+querybynameParseGBK=select *from dao_test where testname = '${name}';
+/*注释*/
 querybyid3=
 	select *from dao_test
 	where testname = #${id}#;

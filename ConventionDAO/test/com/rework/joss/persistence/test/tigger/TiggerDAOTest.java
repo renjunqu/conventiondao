@@ -69,7 +69,40 @@ public class TiggerDAOTest extends BaseDAOTestCase {
 	}
 	
 	
+	public void testSqlmapGBK(){
+		DAOTestDateStringDTO data = new DAOTestDateStringDTO();
+		data.setTestint(new Integer(20));
+		data.setTestname("中文");
+		data.setId("test_id_000");
+		data.setTestId("ttest");
+		data.setTestdate("");
+		stringDAO.create(data);
+		
+		List list = tiggerDAO.queryByTpl(
+				"querybynameGBK", 
+				null);
+		
+		assertEquals( 1 , list.size() );
+	}
+	
+	public void testSqlParseGBK(){
+		DAOTestDateStringDTO data = new DAOTestDateStringDTO();
+		data.setTestint(new Integer(20));
+		data.setTestname("中文");
+		data.setId("test_id_000");
+		data.setTestId("ttest");
+		data.setTestdate("");
+		stringDAO.create(data);
+		
+		List list = tiggerDAO.queryByTpl(
+				"querybynameParseGBK", 
+				ConventionUtils.toMap(new String[]{"name", "中文"}));
+		
+		assertEquals( 1 , list.size() );
+	}
+	
 	public void testTpl(){
+		
 		DAOTestDTO data = new DAOTestDTO();
 		data.setTestint(new Integer(20));
 		data.setTestname("TESTNAME1");
