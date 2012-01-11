@@ -1536,17 +1536,31 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 					
 					char status = '=';
 					String key = "";
+					
+					boolean commetStatus = false;
 					for (int i = 0; i < chars.length; i++) {
-						if( '=' == status && chars[i] == status ){
-							status = ';';
-							key = s.toString();
-							s = new StringBuffer();
-						} else if( ';' == status && chars[i] == status ){
-							status = '=';
-							userSqlMap.put( StringUtils.trim( key ), StringUtils.trim( s.toString() ) );
-							s = new StringBuffer();
-						}else{
-							s.append(chars[i]);
+						
+						
+						if( !commetStatus && '/' == chars[i] && '*' == chars[i+1] ){
+							
+							commetStatus = true;
+							
+						}else if( commetStatus && '/' == chars[i] && '*' == chars[i-1] ){
+							
+							commetStatus = false;
+							
+						}else if( !commetStatus ){
+							if( '=' == status && chars[i] == status ){
+								status = ';';
+								key = s.toString();
+								s = new StringBuffer();
+							}else if( ';' == status && chars[i] == status ){
+								status = '=';
+								userSqlMap.put( StringUtils.trim( key ), StringUtils.trim( s.toString() ) );
+								s = new StringBuffer();
+							}else{
+								s.append(chars[i]);
+							}
 						}
 					}
 					input.close();
