@@ -280,14 +280,6 @@ public interface IBaseDAO {
 	/***********start 定义：扩展IBaseDAO接口的类可能需要调用的方法***********/
 	
 	/**
-	 * 通过配置的sql key获得这个sql(在实现扩展IBaseDAO接口时可能需要调用)
-	 * 如果没有这个sql key则抛出{@link SqlMapNotFoundException}
-	 * @param sqlKey 定义在sqlMapExtend中
-	 * @return
-	 */
-	public String getSqlExtendByKey(String sqlKey);
-	
-	/**
 	 * 批量更新<b>sqlKey</b>配置的sql语句
 	 * @param sqlKey 自定义的sql map对应的key
 	 * @param argsMap 参数Map

@@ -1172,17 +1172,6 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 		return excuteUpdate("updateIgnoreEmpty", dto, true);
 	}
 	
-	public String getSqlExtendByKey(String sqlKey){
-		if(sqlMap == null || sqlMap.get(sqlKey) == null)
-			throw new SqlMapNotFoundException(sqlKey);
-		else{
-			if(logger.isDebugEnabled())
-				logger.info(sqlMap.get(sqlKey));
-			return (String)sqlMap.get(sqlKey);
-		}
-	}
-	
-	
 	private int executeUpdateBySql(final String sql, final Map argsMap){
 		String sqlTemplate = ExpressionUtil.parse(sql,argsMap);
 		SqlTemplateParseDTO sqlParseDTO = new SqlTemplateParseDTO(sqlTemplate);
@@ -1192,11 +1181,13 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 	
 	public int executeUpdate(final String sqlKey, final Map argsMap){
-		return executeUpdateBySql(getSqlExtendByKey(sqlKey), argsMap);
+		return executeUpdateBySql(processSqlmap(sqlKey), argsMap);
 	}
 	
 	private List excuteQuery4Extend(final String sqlKey, final Map paramMap, final Class elementType){
-		String sqlTemplate = getSqlExtendByKey(sqlKey);
+		
+		String sqlTemplate = processSqlmap(sqlKey);
+		// String sqlTemplate = getSqlExtendByKey(sqlKey);
 		
 		return excuteQueryByPrepareStatementSqlTemplate(sqlTemplate, paramMap, elementType);
 	}
