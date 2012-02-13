@@ -9,12 +9,10 @@
 package com.rework.joss.persistence.convention;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -23,13 +21,11 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Properties;
 
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.beanutils.BeanUtils;
@@ -59,12 +55,10 @@ import com.rework.joss.persistence.convention.db.model.RuntimeRowObject;
 import com.rework.joss.persistence.convention.db.model.TableBean;
 import com.rework.joss.persistence.convention.id.IdGenerator;
 import com.rework.joss.persistence.convention.jdbctype.JdbcTypeHandlerFactory;
-import com.rework.joss.persistence.convention.strategy.MysqlSqlStrategy;
 import com.rework.joss.persistence.convention.strategy.SqlStrategyFactory;
 import com.rework.joss.persistence.convention.type.TypeHandler;
 import com.rework.joss.persistence.convention.type.TypeHandlerFactory;
 import com.rework.utils.UtilMisc;
-import com.sun.org.apache.bcel.internal.generic.LADD;
 
 import freemarker.template.Configuration;
 import freemarker.template.ObjectWrapper;
@@ -1500,8 +1494,8 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	    					userSqlMap = null;
 	    				}
 	    			}else{
-	    				lastModifyTime = currentLastmodify;
 	    			}
+	    			lastModifyTime = currentLastmodify;
 	    		}
 	    	}
     	}
@@ -1510,6 +1504,9 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
     		userSqlMap = new HashMap();
     		try {
     			if(StringUtils.isBlank( this.mappingFilePath )){
+    				URL url = getClass().getResource( getClass().getSimpleName() + ".sqlmap" );
+    				lastModifyTime = new File( url.getPath() ).lastModified();
+    				
     				// input = getClass().getResourceAsStream( getClass().getSimpleName() + ".sqlmap" );
     				input = getClass().getResourceAsStream( getClass().getSimpleName() + ".sqlmap" );
     			}else{
@@ -1633,6 +1630,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 	
 	public Integer queryCountByTpl(String sqlTemplate, Object paramObject) {
+		sqlTemplate = processSqlmap(sqlTemplate);
 		if(!sqlTemplate.toUpperCase().trim().startsWith("SELECT")){
 			String tableName = tableObject.getName();
 			sqlTemplate = " SELECT count(*) FROM " + tableName + " " + sqlTemplate;
