@@ -9,6 +9,7 @@
 package com.rework.joss.persistence.convention;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -1508,7 +1509,8 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
     				lastModifyTime = new File( url.getPath() ).lastModified();
     				
     				// input = getClass().getResourceAsStream( getClass().getSimpleName() + ".sqlmap" );
-    				input = getClass().getResourceAsStream( getClass().getSimpleName() + ".sqlmap" );
+    				input = new FileInputStream( url.getPath() );
+    				// input = getClass().getResourceAsStream( getClass().getSimpleName() + ".sqlmap" );
     			}else{
     				input = Thread.currentThread().getContextClassLoader().getResourceAsStream( this.mappingFilePath );
     			}
