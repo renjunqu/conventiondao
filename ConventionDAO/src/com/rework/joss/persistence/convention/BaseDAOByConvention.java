@@ -555,24 +555,38 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	 * @return 更新记录数
 	 */
 	private int excuteUpdate(String sqlMapKey, Object dto, boolean isEmpty){
+		
 		RuntimeRowObject row = mixDbAndPojo(dto);
+		for (Iterator iterator = row.getColumnsWithNotEmptyValue().iterator(); iterator.hasNext();) {
+			List rowList = (List) iterator.next();
+			for (Iterator iterator2 = rowList.iterator(); iterator2.hasNext();) {
+				ColumnBean cbo = (ColumnBean) iterator2.next();
+				logger.debug( cbo.getName() + ":" + cbo.getPropValue() );
+			}
+		}
 		String sql = getSqlTemplate(sqlMapKey);
 		String prepareStatSql = initSqlMapByKey(sql, row, null);
-		SqlArgTypeSetter argTypeSetter;
+		SqlArgTypeSetter argTypeSetter = null;
 		if(isEmpty)
 			argTypeSetter = ConventionUtils.getPropertyValuesIgnoreEmpty(dto, this.tableObject, jdbcTypeHandlerFactory, this.conventionStrategy);
 		else
 			argTypeSetter = ConventionUtils.getPropertyValuesIgnoreNull(dto, this.tableObject, jdbcTypeHandlerFactory, this.conventionStrategy);
-		if(logger.isDebugEnabled())
-			logger.info("args["+StringUtils.join(argTypeSetter.getArgs(),",")+"]");
 		Object[] args = argTypeSetter.getArgs();
 		int[] argTypes = argTypeSetter.getArgTypes();
+		if(logger.isDebugEnabled()){
+			String debugMsg = "ConventionDAO arguments : ";
+			for (int i = 0; i < args.length; i++) {
+				debugMsg += "," + i + ":[" + args[i] + "]";
+			}
+			logger.debug( debugMsg );
+		}
+		
 		int optNum = 0;
 		if(isExistsClobColumn(argTypes)){
 			//clob型需要特殊处理
 			optNum = getJdbcTemplate().update(prepareStatSql, args, argTypes);
 		}else{
-			optNum = getJdbcTemplate().update(prepareStatSql, argTypeSetter.getArgs());
+			optNum = getJdbcTemplate().update(prepareStatSql, args);
 		}
 		if(logger.isDebugEnabled())
 			logger.info("完成对"+optNum+"条记录的操作！");
