@@ -53,11 +53,6 @@ public class RuntimeRowObject {
 	private TableBean dbo;
 
 	/**
-	 * 值对象
-	 */
-	private Object dataObj;
-
-	/**
 	 * 具有不为空的操作结果字段列表
 	 */
 	private List columnsWithNotEmptyValue = new ArrayList();
@@ -94,7 +89,6 @@ public class RuntimeRowObject {
 			IConventionStrategy conventionStrategy) {
 		// a copy for dbo
 		this.dbo = (TableBean) dbo.clone();
-		this.dataObj = rowObj;
 		this.conventionStrategy = conventionStrategy;
 		
 		List columnsWithNotNullValue = new ArrayList();
@@ -165,14 +159,6 @@ public class RuntimeRowObject {
 		this.dbo = dbo;
 	}
 
-	public Object getVo() {
-		return dataObj;
-	}
-
-	public void setVo(Object vo) {
-		this.dataObj = vo;
-	}
-
 	public List getColumnsWithNotEmptyValue() {
 		return columnsWithNotEmptyValue;
 	}
@@ -213,13 +199,6 @@ public class RuntimeRowObject {
 		this.conventionStrategy = conventionStrategy;
 	}
 
-	public Object getDataObj() {
-		return dataObj;
-	}
-
-	public void setDataObj(Object dataObj) {
-		this.dataObj = dataObj;
-	}
 
 	public List getColumnsWithNotIgnoreNull() {
 		return columnsWithNotIgnoreNull;
