@@ -558,11 +558,8 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 		
 		RuntimeRowObject row = mixDbAndPojo(dto);
 		for (Iterator iterator = row.getColumnsWithNotEmptyValue().iterator(); iterator.hasNext();) {
-			List rowList = (List) iterator.next();
-			for (Iterator iterator2 = rowList.iterator(); iterator2.hasNext();) {
-				ColumnBean cbo = (ColumnBean) iterator2.next();
-				logger.debug( cbo.getName() + ":" + cbo.getPropValue() );
-			}
+			ColumnBean cbo = (ColumnBean) iterator.next();
+			logger.debug( cbo.getName() + ":" + cbo.getPropValue() );
 		}
 		String sql = getSqlTemplate(sqlMapKey);
 		String prepareStatSql = initSqlMapByKey(sql, row, null);
