@@ -49,7 +49,7 @@ public class JoinTable {
 	public String wrapSql(String sql) {
 		// 父表要放在前面
 		sql = "select b.* from " 
-			+ "("+ sql +") as a " + this.joinType + tableName +" as b " 
+			+ "("+ sql +") as a " + this.joinType + " " + tableName +" as b " 
 			+ "on b." + joinColumnName + " = a." + primaryKeyName;
 		if(StringUtils.isNotBlank(getWhereClause())) {
 			sql += " where " + getWhereClause();
