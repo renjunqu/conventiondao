@@ -656,7 +656,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 			// 判断child的外键值是匹配parent的主键值,从而进行关联
 			for (Iterator iterator2 = childList.iterator(); iterator2.hasNext();) {
 				BaseObject child = (BaseObject) iterator2.next();
-				Object fkvalue = getColumnValue(child, join.getJoinColumnName());
+				Object fkvalue = getColumnValue(child, join.getJoinColumnName(), false);
 
 				if( fkvalue.toString().equals( pkvalue.toString() ) ){
 					childTarget.add(child);
@@ -772,12 +772,12 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	 */
 	private Object getPkValue(Object dto) {
 		String pkColumnName = tableObject.getPkColumn().getName();
-		return getColumnValue(dto, pkColumnName);
+		return getColumnValue(dto, pkColumnName, true);
 	}
 
-	private Object getColumnValue(Object pojo, String pkColumnName) {
+	private Object getColumnValue(Object pojo, String columnName, boolean isPrimaryKey) {
 		// 主键对应的java属性名 
-		String javaPropName = conventionStrategy.translateFromColumnToProperty(pkColumnName, true);
+		String javaPropName = conventionStrategy.translateFromColumnToProperty(columnName, isPrimaryKey);
 		try {
 			return BeanUtils.getProperty(pojo, javaPropName);
 		} catch (Exception e) {
@@ -808,7 +808,11 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 				}
 			}
 		}
-		// mysql的情况下,有更简便高效的处理方法
+		for(int i = 0; i < dtos.length; i++){
+			create(dtos[i]);
+		}
+		/**
+		// mysql的情况下,有更简便高效的处理方法,下面优化仅对所有创建对象不为null的属性都一致的情况，如果不同对象对应的非空字段不同的话这里处理会有问题，先好使再说，待优化 TODO commented by zhujj
 		String type = DBFactory.getDBType(this.getDataSource());
 		if(Constants.MYSQL.equals(type)){
 		
@@ -838,7 +842,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 			for(int i = 0; i < dtos.length; i++){
 				create(dtos[i]);
 			}
-		}
+		}*/
 	}
 	
 	public String createAndId(BaseObject dto) {
@@ -1444,11 +1448,11 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 
 	public List queryByTpl(String sqlTemplate, Object paramObject, Map paramMap) {
-		return queryByTpl( sqlTemplate, paramObject, new HashMap(), null, -1, -1 );
+		return queryByTpl( sqlTemplate, paramObject, paramMap, null, -1, -1 );
 	}
 
 	public List queryByTpl(String sqlTemplate, Object paramObject, Map paramMap, int begin, int end) {
-		return queryByTpl(sqlTemplate, paramObject, new HashMap(), null, begin, end);
+		return queryByTpl(sqlTemplate, paramObject, paramMap, null, begin, end);
 	}
 	
 	public List queryByTpl(String sqlTemplate, DTOCallbackHandler callbackHandler){
