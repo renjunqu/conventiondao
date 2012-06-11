@@ -658,7 +658,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 				BaseObject child = (BaseObject) iterator2.next();
 				Object fkvalue = getColumnValue(child, join.getJoinColumnName(), false);
 
-				if( fkvalue.toString().equals( pkvalue.toString() ) ){
+				if( pkvalue != null && fkvalue != null && fkvalue.toString().equals( pkvalue.toString() ) ){
 					childTarget.add(child);
 				}
 			}
