@@ -9,6 +9,7 @@
 package com.rework.joss.persistence.convention;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -1520,11 +1521,12 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
     				ClassPathResource resource = new ClassPathResource(getClass().getSimpleName() + ".sqlmap", getClass());
     				if(resource.exists()) {
     					try{
+    						input = new FileInputStream(resource.getURL().getPath());
     						lastModifyTime = resource.getFile().lastModified();
     					}catch(FileNotFoundException ex) {
     						//获取jar下的资源会抱错
+    						input = resource.getInputStream();
     					}
-    					input = resource.getInputStream();
     				}else{
     					logger.debug(" no sqlmapping file find! ");
     				}
