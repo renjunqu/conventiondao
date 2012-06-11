@@ -9,7 +9,7 @@
 package com.rework.joss.persistence.convention;
 
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -37,6 +37,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
@@ -48,8 +49,6 @@ import com.rework.core.dto.BaseObject;
 import com.rework.joss.persistence.IBaseDAO;
 import com.rework.joss.persistence.convention.annotation.DAO;
 import com.rework.joss.persistence.convention.annotation.Fetch;
-import com.rework.joss.persistence.convention.db.Constants;
-import com.rework.joss.persistence.convention.db.DBFactory;
 import com.rework.joss.persistence.convention.db.IJdbcTypeRegistry;
 import com.rework.joss.persistence.convention.db.model.ColumnBean;
 import com.rework.joss.persistence.convention.db.model.RuntimeRowObject;
@@ -59,7 +58,6 @@ import com.rework.joss.persistence.convention.jdbctype.JdbcTypeHandlerFactory;
 import com.rework.joss.persistence.convention.strategy.SqlStrategyFactory;
 import com.rework.joss.persistence.convention.type.TypeHandler;
 import com.rework.joss.persistence.convention.type.TypeHandlerFactory;
-import com.rework.utils.UtilMisc;
 
 import freemarker.template.Configuration;
 import freemarker.template.ObjectWrapper;
@@ -1504,12 +1502,11 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	    		URL url = getClass().getResource( getClass().getSimpleName() + ".sqlmap" );
 	    		// 有并且不在jar包中
 	    		if( null != url && url.getFile().indexOf(".jar") < 0 ){
-	    			Long currentLastmodify = new File( url.getPath() ).lastModified();
+	    			long currentLastmodify = new File( url.getPath() ).lastModified();
 	    			if( null != lastModifyTime ){
-	    				if( lastModifyTime.longValue() != currentLastmodify.longValue() ){
+	    				if( lastModifyTime.longValue() != currentLastmodify ){
 	    					userSqlMap = null;
 	    				}
-	    			}else{
 	    			}
 	    			lastModifyTime = currentLastmodify;
 	    		}
@@ -1520,12 +1517,17 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
     		userSqlMap = new HashMap();
     		try {
     			if(StringUtils.isBlank( this.mappingFilePath )){
-    				URL url = getClass().getResource( getClass().getSimpleName() + ".sqlmap" );
-    				lastModifyTime = new File( url.getPath() ).lastModified();
-    				
-    				// input = getClass().getResourceAsStream( getClass().getSimpleName() + ".sqlmap" );
-    				input = new FileInputStream( url.getPath() );
-    				// input = getClass().getResourceAsStream( getClass().getSimpleName() + ".sqlmap" );
+    				ClassPathResource resource = new ClassPathResource(getClass().getSimpleName() + ".sqlmap", getClass());
+    				if(resource.exists()) {
+    					try{
+    						lastModifyTime = resource.getFile().lastModified();
+    					}catch(FileNotFoundException ex) {
+    						//获取jar下的资源会抱错
+    					}
+    					input = resource.getInputStream();
+    				}else{
+    					logger.debug(" no sqlmapping file find! ");
+    				}
     			}else{
     				input = Thread.currentThread().getContextClassLoader().getResourceAsStream( this.mappingFilePath );
     			}
