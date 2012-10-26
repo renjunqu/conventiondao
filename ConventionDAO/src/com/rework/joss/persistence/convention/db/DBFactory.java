@@ -1,4 +1,4 @@
-﻿package com.rework.joss.persistence.convention.db;
+package com.rework.joss.persistence.convention.db;
 
 import java.sql.Connection;
 import java.sql.SQLException;

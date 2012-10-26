@@ -1,4 +1,4 @@
-﻿package com.rework.joss.persistence.convention.annotation;
+package com.rework.joss.persistence.convention.annotation;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;

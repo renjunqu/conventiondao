@@ -1,4 +1,4 @@
-﻿package com.rework.joss.persistence.convention.annotation;
+package com.rework.joss.persistence.convention.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
