@@ -1,4 +1,4 @@
-﻿package com.rework.joss.persistence.convention.db.model;
+package com.rework.joss.persistence.convention.db.model;
 
 import java.util.ArrayList;
 import java.util.Collection;

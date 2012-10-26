@@ -1,4 +1,4 @@
-﻿package com.rework.joss.persistence.convention.db.model;
+package com.rework.joss.persistence.convention.db.model;
 
 
 public class TableJoin {
