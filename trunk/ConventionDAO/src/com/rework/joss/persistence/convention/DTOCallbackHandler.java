@@ -1,4 +1,4 @@
-﻿package com.rework.joss.persistence.convention;
+package com.rework.joss.persistence.convention;
 
 public interface DTOCallbackHandler {
 
