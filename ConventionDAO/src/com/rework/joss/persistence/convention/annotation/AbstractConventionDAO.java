@@ -215,8 +215,9 @@ public class AbstractConventionDAO extends BaseDAOByConvention{
             	}finally {
 					DataSourceUtils.releaseConnection(getConnection(), getDataSource());
 				}
-            	isModified = true;
             }
+            //配置的DTO可能没有配置DBColumn字段，所以也要考虑到这种情况
+            isModified = true;
         }
         // 如果新加了表，或者修改了字段 
 		if( isModified ){
