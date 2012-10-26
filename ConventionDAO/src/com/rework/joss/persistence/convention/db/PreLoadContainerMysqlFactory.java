@@ -14,6 +14,7 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.FactoryBean;
@@ -86,7 +87,8 @@ public class PreLoadContainerMysqlFactory implements FactoryBean {
 		"and (t.table_type = 'BASE TABLE' or t.table_type = 'VIEW') " +
 		"and c.table_schema = '"+ getSchemaName() +"' " +
 		"and t.table_schema = '"+ getSchemaName() +"' " +
-		"group by "+
+		(StringUtils.isNotEmpty(preLoadCondition)? " and (" + preLoadCondition + ")" : "") + 
+		" group by "+
 		"c.column_name,c.column_comment,c.table_name,c.data_type,c.is_nullable,c.character_maximum_length ,c.numeric_scale ,c.column_key,t.table_type "
 		;
 		

@@ -1,4 +1,4 @@
-﻿/* 
+/* 
  * Copyright (c) 2004-2007 HEER Software, Inc. All rights reserved.
  *
  * This software consists of contributions made by many individuals
