@@ -1,4 +1,4 @@
-﻿package com.rework.joss.persistence.convention.type;
+package com.rework.joss.persistence.convention.type;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

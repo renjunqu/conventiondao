@@ -1,4 +1,4 @@
-﻿package com.rework.joss.persistence.convention.jdbctype;
+package com.rework.joss.persistence.convention.jdbctype;
 
 import java.math.BigDecimal;
 

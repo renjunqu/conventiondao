@@ -1,4 +1,4 @@
-﻿package com.rework.utils;
+package com.rework.utils;
 
 import java.util.UUID;
 
