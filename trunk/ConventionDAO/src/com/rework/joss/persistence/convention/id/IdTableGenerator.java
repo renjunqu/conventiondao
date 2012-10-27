@@ -1,4 +1,4 @@
-﻿package com.rework.joss.persistence.convention.id;
+package com.rework.joss.persistence.convention.id;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
