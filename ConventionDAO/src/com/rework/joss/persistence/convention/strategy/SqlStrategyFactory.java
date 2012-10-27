@@ -1,4 +1,4 @@
-﻿package com.rework.joss.persistence.convention.strategy;
+package com.rework.joss.persistence.convention.strategy;
 
 import javax.sql.DataSource;
 

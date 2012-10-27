@@ -1,4 +1,4 @@
-﻿package com.rework.joss.persistence.convention.spring;
+package com.rework.joss.persistence.convention.spring;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;

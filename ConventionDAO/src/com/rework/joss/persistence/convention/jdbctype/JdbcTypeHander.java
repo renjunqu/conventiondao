@@ -1,4 +1,4 @@
-﻿package com.rework.joss.persistence.convention.jdbctype;
+package com.rework.joss.persistence.convention.jdbctype;
 
 /**
  * <b>数据类型转换</b>
