@@ -504,7 +504,17 @@ public class TableBean implements Comparable,Cloneable {
 		cloneTable.metaData = this.metaData;
 		cloneTable.objectType = this.objectType;
 		if(columns != null){
-			cloneTable.columns = columns.subList(0, columns.size());
+			for(int i = 0; i < columns.size(); i++) {
+				ColumnBean orig = (ColumnBean)columns.get(i);
+				ColumnBean clone = (ColumnBean)orig.clone();
+				cloneTable.notifyColumn(clone);
+				if(orig.isPrimaryKey()) {
+					cloneTable.notifyPrimaryKey(clone.getName());
+				}
+				if(this.isForeignKey(orig)) {
+					cloneTable.notifyForeignKey(clone.getName(), clone);
+				}
+			}
 		}
 		if(parentRelationships != null){
 			cloneTable.parentRelationships = parentRelationships.subList(0, parentRelationships.size());
@@ -521,22 +531,7 @@ public class TableBean implements Comparable,Cloneable {
 		if(this.oneToManyRelationships != null){
 			cloneTable.manyToManyRelationships = manyToManyRelationships.subList(0, manyToManyRelationships.size());
 		}
-		if(this.pKeys != null){
-			cloneTable.pKeys = getMapCopy(pKeys);
-		}
-		if(this.fKeys != null){
-			cloneTable.fKeys = getMapCopy(fKeys);
-		}
-		if(this.columnMap != null){
-			cloneTable.columnMap = getMapCopy(columnMap);
-		}
 		cloneTable.parentTableRelationship = parentTableRelationship;
 		return cloneTable;
-	}
-	
-	private Map getMapCopy(Map targMap){
-		HashMap tempMap = new HashMap();
-		targMap.putAll(tempMap);
-		return targMap;
 	}
 }

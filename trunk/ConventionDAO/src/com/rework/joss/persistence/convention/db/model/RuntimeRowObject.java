@@ -85,10 +85,10 @@ public class RuntimeRowObject {
 	 * 
 	 * @param obj
 	 */
-	public RuntimeRowObject(TableBean dbo, Object rowObj, Object conditionObj,
+	public RuntimeRowObject(TableBean origDbo, Object rowObj, Object conditionObj,
 			IConventionStrategy conventionStrategy) {
 		// a copy for dbo
-		this.dbo = (TableBean) dbo.clone();
+		this.dbo = (TableBean) origDbo.clone();
 		this.conventionStrategy = conventionStrategy;
 		
 		List columnsWithNotNullValue = new ArrayList();
