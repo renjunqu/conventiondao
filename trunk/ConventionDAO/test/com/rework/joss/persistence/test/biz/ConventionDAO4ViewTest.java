@@ -1,5 +1,7 @@
 ﻿package com.rework.joss.persistence.test.biz;
 
+import org.junit.Assert;
+
 import com.rework.joss.persistence.IBaseDAO;
 import com.rework.joss.persistence.test.BaseDAOTestCase;
 
@@ -18,10 +20,10 @@ public class ConventionDAO4ViewTest extends BaseDAOTestCase {
 	
 	public void testFindById(){
 		VwGyUserDTO result = (VwGyUserDTO)vwGyUserDAO.findById("test");
-		assertNull(result);
+		Assert.assertNull(result);
 	}
 	public void testIdRetrive(){
 		VwGyUserDTO result = (VwGyUserDTO)vwGyUserDAO.findById("test");
-		assertNull(result.getId());
+		Assert.assertNull(result.getId());
 	}
 }
