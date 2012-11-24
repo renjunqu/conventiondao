@@ -35,10 +35,12 @@
 		<property name="dataSource" ref="dataSource"/>
 	</bean>
 	
+	<!--
 	<bean id="container"
 		class="com.rework.joss.persistence.convention.db.PreLoadContainerMysqlFactory" autowire="byName">
 		<property name="dataSource" ref="dataSource"/>
 	</bean>
+	  -->
 
 	<bean id="generator" class="com.rework.joss.persistence.convention.id.IDGeneratorFactory"></bean>
 	<bean id="baseSqlMap" class="org.springframework.beans.factory.config.MapFactoryBean">
