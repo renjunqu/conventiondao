@@ -40,11 +40,15 @@ public class AbstractConventionDAO extends BaseDAOByConvention{
 		
 	}
 	
-	@Override
 	@Autowired
+	@Override
 	public void setMetaSource(ORMappingSource metaSource) {
-		
-		
+		super.setMetaSource(metaSource);
+		super.setDataSource(metaSource.getDataSource());
+	}
+	
+	@Override
+	public void init() {
 		if(!getClass().isAnnotationPresent(DAO.class)){
 			throw new BaseRuntimeException("no DAO annotation defined!");
 		}
@@ -66,8 +70,6 @@ public class AbstractConventionDAO extends BaseDAOByConvention{
         
         
         super.initStrategy();
-		super.setMetaSource(metaSource);
-		super.setDataSource(metaSource.getDataSource());
 		
         // 判断这个表是否存在
 		/*
