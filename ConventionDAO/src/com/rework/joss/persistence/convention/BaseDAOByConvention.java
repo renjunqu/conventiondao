@@ -91,7 +91,9 @@ import freemarker.template.Template;
  *
  */
 public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
-
+	//判断是否初始化的同步锁
+	private static byte[] LOCK = new byte[0];
+	
 	private static final String REMOVE = "remove";
 
 	private static final String UPDATE_KEY = "update";
@@ -123,7 +125,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
     
     private Long lastModifyTime = null;
 
-	private ORMappingSource metaSource;
+    protected ORMappingSource metaSource;
 	
 	/**
 	 * 本身定义的sqlmap
@@ -197,6 +199,15 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	 */
 	public void init(){
 		tableObject = metaSource.getTableMetaData( dbo);
+	}
+	
+	public final void assertInit() {
+		synchronized (LOCK) {
+			if(tableObject == null) {
+					logger.debug("-------------------" + Thread.currentThread().getId() +  "开始初始化 ");
+					init();
+			}
+		}
 	}
 	
 	public void setDbo(String dbo) {
@@ -495,6 +506,8 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	
 	public BaseObject findById(Object id, Map paramMap) {
 		Assert.notNull(id, "id不能为空");
+		
+		assertInit();
 		if(tableObject.getPkColumns().isEmpty()){
 			throw new BaseRuntimeException("未定义主键!");
 			/*
@@ -521,6 +534,8 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	
 	public List findByIds(Object[] ids) {
 		Assert.notEmpty(ids, "不能存在空id");
+		
+		assertInit();
 		if(tableObject.getPkColumns().isEmpty()){
 			throw new BaseRuntimeException("未定义主键!");
 		}else{
@@ -728,6 +743,8 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	
 	
 	public void create(BaseObject dto) {
+		assertInit();
+		
 		Object pkValue = null;
 		try{
 			pkValue = getPkValue(dto);
@@ -786,6 +803,8 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	
 	public void create(BaseObject dto, String id) {
 		Assert.notNull(dto);
+		
+		assertInit();
 		setPkValue(dto, id);
 		create(dto);
 	}
@@ -794,6 +813,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 		if(dtos == null || dtos.length < 1)
 			return;
 		
+		assertInit();
 		for(int i = 0; i < dtos.length; i++){
 			Object pkValue = null;
 			try{
@@ -846,6 +866,8 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	
 	public String createAndId(BaseObject dto) {
 		Assert.notNull(dto);
+		
+		assertInit();
 		//dto.setId(id);
 		create(dto);
 		if(null != generator){
@@ -876,6 +898,8 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 	
 	public void replace(Map beanMap) {
+		assertInit();
+		
 		ColumnBean column = tableObject.getPkColumn();
 		String value = (String) beanMap.get(column.getName());// TODO 这里需要做名字的转换？
 		if(null != value){
@@ -885,7 +909,8 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 	
 	public void replace(BaseObject bean) {
-		ColumnBean column = tableObject.getPkColumn();
+		assertInit();
+		
 		Object value = getPkValue(bean);
 		if(null != value){
 			remove(value.toString());
@@ -894,12 +919,16 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 	
 	public void remove(String id){
+		assertInit();
+		
 		String sqlTemplate = getSqlTemplate("removeById");
 		String sql = initSqlMapByKey(sqlTemplate, mixDbAndPojo(null), null);
 		getJdbcTemplate().update(sql,new Object[]{id});
 	}
 	
 	public void remove(Integer id){
+		assertInit();
+		
 		String sqlTemplate = getSqlTemplate("removeById");
 		String sql = initSqlMapByKey(sqlTemplate, mixDbAndPojo(null), null);
 		getJdbcTemplate().update(sql,new Object[]{id});
@@ -908,6 +937,8 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	public void remove(String[] ids) {
 		if(ids == null || ids.length < 1)
 			return;
+		
+		assertInit();
 		for(int i = 0; i < ids.length; i++){
 			if(StringUtils.isNotBlank(ids[i])){
 				remove(ids[i]);
@@ -918,6 +949,8 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	public void remove(Integer[] ids) {
 		if(ids == null || ids.length < 1)
 			return;
+		
+		assertInit();
 		for(int i = 0; i < ids.length; i++){
 			if( null != ids[i] ){
 				remove(ids[i]);
@@ -946,6 +979,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 	
 	public List query(Object pojoOrMap, String criteria, int begin, int interval, String order) {
+		assertInit();
 		
 		Map paramMap = new HashMap();
 		if( begin >= 0 && interval > 0 ){
@@ -986,12 +1020,16 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 	
 	public List query(BaseObject dto, Map queryParamMap, int begin, int interval) {
+		assertInit();
+		
 		Map paramMap = initParamMap(queryParamMap, begin, interval);
 		
 		return excuteQueryUsingBaseObject("query", dto, paramMap);
 	}
 	
 	public List queryByCriteria(String criteria){
+		assertInit();
+		
 		HashMap paramMap = new HashMap();
 		if(StringUtils.isNotBlank(criteria))
 			paramMap.put(PARAM_CRITERIA, AND + criteria);
@@ -999,6 +1037,8 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 	
 	public Integer queryCount(Object criteriaOrbeanOrMap) {
+		assertInit();
+		
 		if(criteriaOrbeanOrMap instanceof String){
 			return queryCount(null, (String)criteriaOrbeanOrMap);
 		}
@@ -1006,6 +1046,8 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 	
 	public Integer queryCount(BaseObject dto, Map queryParamMap) {
+		assertInit();
+		
 		Map paramMap = new HashMap();
 		paramMap.putAll(queryParamMap);
 		if(queryParamMap.containsKey(PARAM_CRITERIA)){
@@ -1019,6 +1061,8 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 	
 	public Integer queryCount(Object object, String criteria){
+		assertInit();
+		
 		Map paramMap = new HashMap();
 		if(StringUtils.isNotBlank(criteria)){
 			paramMap.put(PARAM_CRITERIA, AND + criteria);
@@ -1054,6 +1098,8 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 	
 	public BaseObject queryForBaseObject(Object pojoOrMap){
+		assertInit();
+		
 		List resultList = this.query(pojoOrMap, "");
 		if(resultList.size() < 1){
 			return null;
@@ -1065,11 +1111,15 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 	
 	public BaseObject queryForBaseObject(BaseObject baseObject, Map paramMap) {
+		assertInit();
+		
 		List list = queryByObjectAndMap(baseObject, paramMap);
 		return (BaseObject) extractOnlyOneResult(list);
 	}
 	
 	public BaseObject queryForBaseObjectByCriteria(String criteria){
+		assertInit();
+		
 		List resultList = this.queryByCriteria(criteria);
 		if(resultList.size() < 1){
 			return null;
@@ -1081,6 +1131,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 
 	public int removeByCondition(BaseObject dto) {
+		assertInit();
 		return excuteUpdate(REMOVE, dto, true);
 	}
 
@@ -1089,6 +1140,8 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 	
 	public int removeByCriteria(String criteria) {
+		assertInit();
+		
 		Map paramMap = new HashMap();
 		if(StringUtils.isBlank(criteria)){
 			//如果criteria为blank则不进行删除
@@ -1101,15 +1154,21 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 	
 	public int update(BaseObject dto) {
+		assertInit();
+		
 		return excuteUpdate(UPDATE_KEY, dto, false);
 	}
 	
 	public int update(Map beanMap) {
 		Assert.notNull(beanMap);
+		
+		assertInit();
 		return excuteUpdate(UPDATE_KEY, beanMap, false);
 	}
 
 	public void updateNotIgnoreNull(BaseObject dto) {
+		assertInit();
+		
 		excuteUpdateNotIgnoreNull("updateNotIgnoreNull", dto);
 	}
 	
@@ -1166,18 +1225,26 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 	public int updateByConditionIgnoreEmpty(BaseObject data,
 			BaseObject condition) {
+		assertInit();
+		
 		return excuteUpdate("updateByConditionIgnoreEmpty", data, condition);
 	}
 
 	public int updateByCondtion(BaseObject data, BaseObject condition) {
+		assertInit();
+		
 		return excuteUpdate("updateByConditionIgnoreNull", data, condition);
 	}
 	
 	public int updateByCondition(Map update, Map condition) {
+		assertInit();
+		
 		return excuteUpdate("updateByConditionIgnoreNull", toPojo(update), toPojo(condition));
 	}
 
 	public int updateIgnoreEmpty(BaseObject dto) {
+		assertInit();
+		
 		return excuteUpdate("updateIgnoreEmpty", dto, true);
 	}
 	
@@ -1194,6 +1261,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 	
 	private List excuteQuery4Extend(final String sqlKey, final Map paramMap, final Class elementType){
+		assertInit();
 		
 		String sqlTemplate = processSqlmap(sqlKey);
 		// String sqlTemplate = getSqlExtendByKey(sqlKey);
@@ -1364,6 +1432,8 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 	
 	public Object queryForObject(final String sqlKey, final BaseObject query, Class requiredType){
+		assertInit();
+		
 		List resultList = queryForListByBaseObject(sqlKey, query,requiredType);
 		if(resultList.size() < 1){
 			return null;
@@ -1379,6 +1449,8 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 	
 	public Object queryForObject(final String sqlKey, final Map queryMap, Class requiredType){
+		assertInit();
+		
 		List resultList = queryForListByMap(sqlKey, queryMap, requiredType);
 		if(resultList.size() < 1){
 			return null;
@@ -1471,6 +1543,8 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 
 	public List queryByTpl(String sqlTemplate, Object paramObject, Map paramMap, DTOCallbackHandler callbackHandler, int begin, int interval) {
+		assertInit();
+		
 		sqlTemplate = processSqlmap(sqlTemplate);
 		if(null == paramMap){ 
 			paramMap = new HashMap(); 
@@ -1625,6 +1699,8 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 
 	public Object queryForObjectByTpl(String sqlTemplate, Object paramObject, Class requireType) {
+		assertInit();
+		
 		sqlTemplate = processSqlmap(sqlTemplate);
 		Map paramMap = initParamMap(paramObject, -1, -1);
 		
@@ -1633,6 +1709,8 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 	
 	public List queryForListByTpl(String sqlTemplate, Object paramObject, Class requireType) {
+		assertInit();
+		
 		sqlTemplate = processSqlmap(sqlTemplate);
 		Map paramMap = initParamMap(paramObject, -1, -1);
 		
@@ -1641,6 +1719,8 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 	
 	public List queryForListByTpl(String sqlTemplate, Object paramObject, Class requireType, int begin, int interval) {
+		assertInit();
+		
 		sqlTemplate = processSqlmap(sqlTemplate);
 		Map paramMap = initParamMap(paramObject, begin, interval);
 		if(begin > 0 || interval > 0){
@@ -1651,6 +1731,8 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 	
 	public Integer queryCountByTpl(String sqlTemplate, Object paramObject) {
+		assertInit();
+		
 		sqlTemplate = processSqlmap(sqlTemplate);
 		if(!sqlTemplate.toUpperCase().trim().startsWith("SELECT")){
 			String tableName = tableObject.getName();
@@ -1665,6 +1747,8 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 
 	public Integer queryCountByTpl(String sqlTemplate) {
+		assertInit();
+		
 		sqlTemplate = processSqlmap(sqlTemplate);
 		if(!sqlTemplate.toUpperCase().trim().startsWith("SELECT")){
 			String tableName = tableObject.getName();
@@ -1674,6 +1758,8 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 
 	public int updateByTpl(String sqlTemplate, Object paramObject){
+		assertInit();
+		
 		String sqlBeforeParepareStatement = parse(sqlTemplate ,paramObject);
 		SqlTemplateParseDTO sqlParseDTO = new SqlTemplateParseDTO(sqlBeforeParepareStatement);
 		return getJdbcTemplate().update(sqlParseDTO.getParseResult(), sqlParseDTO.getTemplateArgs());
