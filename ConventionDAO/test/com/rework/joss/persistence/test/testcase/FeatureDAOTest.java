@@ -12,6 +12,8 @@ import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Assert;
+
 import com.rework.joss.persistence.IBaseDAO;
 import com.rework.joss.persistence.convention.ConventionUtils;
 import com.rework.joss.persistence.test.BaseDAOTestCase;
@@ -41,21 +43,21 @@ public class FeatureDAOTest extends BaseDAOTestCase {
 		data.setNotMatchId("test_notmatch_id_000");
 		testDAO4ColMap.create(data);
 		DAOTestDTO testDTO = (DAOTestDTO) testDAO4ColMap.findById(data.getNotMatchId());
-		assertNotNull(testDTO);
+		Assert.assertNotNull(testDTO);
 	}
 
 	public void testGetTestByTestname(){
 		List list  = daoTestDAO.getTestByTestname("TESTNAME1");
-		assertEquals(list.size(), 1);
+		Assert.assertEquals(list.size(), 1);
 		daoTestDAO.getTestByTestname("我的天空");
 	}
 	public void testGetTestByTestId(){
 		DAOTestDTO dto = daoTestDAO.getTestByTestId("TEST_ID1");
-		assertNotNull(dto);
+		Assert.assertNotNull(dto);
 	}
 	public void testGetMaxTestId(){
 		int testInt = daoTestDAO.getMaxTestInt();
-		assertEquals(testInt, 20);
+		Assert.assertEquals(testInt, 20);
 	}
 	
 	public void testqueryForListByBaseObject(){
@@ -63,7 +65,7 @@ public class FeatureDAOTest extends BaseDAOTestCase {
 		data.setTestint(new Integer(20));
 		data.setTestname("TESTNAME1");
 		List resultList = daoTestDAO.queryDAOTest(data);
-		assertEquals(resultList.size(), 1);
+		Assert.assertEquals(resultList.size(), 1);
 		
 		ArrayList testlist = new ArrayList();
 		data.setTestlist(testlist);

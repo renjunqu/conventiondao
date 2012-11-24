@@ -8,6 +8,8 @@
  */
 package com.rework.joss.persistence.test.testcase;
 
+import org.junit.Assert;
+
 import com.rework.joss.persistence.IBaseDAO;
 import com.rework.joss.persistence.test.BaseDAOTestCase;
 import com.rework.joss.persistence.test.biz.MessageDTO;
@@ -29,7 +31,7 @@ public class OracleClobDAOTest extends BaseDAOTestCase {
 	private static String oldMsg;
 	public void testClobRead() {
 		MessageDTO dto = (MessageDTO)messageDAO.findById("eval_report_admin");
-		assertNotNull(dto.getMessage());
+		Assert.assertNotNull(dto.getMessage());
 		oldMsg = dto.getMessage();
 	}
 	public void testClobWrite() {
@@ -37,6 +39,6 @@ public class OracleClobDAOTest extends BaseDAOTestCase {
 		dto.setId("eval_report_admin");
 		dto.setMessage(oldMsg);
 		messageDAO.updateIgnoreEmpty(dto);
-		assertEquals(dto.getMessage(), oldMsg);
+		Assert.assertEquals(dto.getMessage(), oldMsg);
 	}
 }

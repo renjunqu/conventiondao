@@ -13,12 +13,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import com.rework.joss.persistence.IBaseDAO;
 import com.rework.joss.persistence.test.BaseDAOTestCase;
 import com.rework.joss.persistence.test.biz.GyXjStudentDTO;
-import com.rework.utils.UUIDHexGenerator;
 
 public class ConvetionDAOTest extends BaseDAOTestCase {
 	IBaseDAO xgStudentDAO;
@@ -74,7 +73,7 @@ public class ConvetionDAOTest extends BaseDAOTestCase {
 		student.setXh("2005013308");
 		xgStudentDAO.create(student, "0");
 		GyXjStudentDTO student2 = (GyXjStudentDTO)xgStudentDAO.findById(student.getStudentId());
-		assertNotNull(student2);
+		Assert.assertNotNull(student2);
 	}
 	
 	public void testFindByIds(){

@@ -8,6 +8,8 @@
  */
 package com.rework.joss.persistence.test.testcase;
 
+import org.junit.Assert;
+
 import com.rework.joss.persistence.IBaseDAO;
 import com.rework.joss.persistence.test.BaseDAOTestCase;
 import com.rework.joss.persistence.test.biz.DAOTestDTO;
@@ -34,7 +36,7 @@ public class BooleanDAOTest extends BaseDAOTestCase {
 		
 		DAOTestDTO dto = (DAOTestDTO)booleanDAO.findById(id);
 		
-		assertEquals(Boolean.FALSE, dto.getTestboolean());
+		Assert.assertEquals(Boolean.FALSE, dto.getTestboolean());
 	}
 
 }

@@ -14,6 +14,7 @@ import java.util.List;
 import javax.annotation.Resource;
 import javax.xml.crypto.Data;
 
+import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.rework.joss.persistence.IBaseDAO;
@@ -82,7 +83,7 @@ public class TiggerDAOTest extends BaseDAOTestCase {
 				"querybynameGBK", 
 				null);
 		
-		assertEquals( 1 , list.size() );
+		Assert.assertEquals( 1 , list.size() );
 	}
 	
 	public void testSqlParseGBK(){
@@ -98,7 +99,7 @@ public class TiggerDAOTest extends BaseDAOTestCase {
 				"querybynameParseGBK", 
 				ConventionUtils.toMap(new String[]{"name", "中文"}));
 		
-		assertEquals( 1 , list.size() );
+		Assert.assertEquals( 1 , list.size() );
 	}
 	
 	public void testTpl(){
