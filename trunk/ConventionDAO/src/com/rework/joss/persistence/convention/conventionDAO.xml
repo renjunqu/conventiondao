@@ -54,11 +54,11 @@
               <prop key="create">
                 <![CDATA[
                   insert into ${tbl.dbo.name} (  
-                  <#list tbl.columnsWithNotNullValue as x>
+                  <#list tbl.columnsWithNotEmptyValue as x>
                     ${x.name}<#if x_has_next>,</#if>
                   </#list>  
                   )values(
-                  <#list tbl.columnsWithNotNullValue as x>
+                  <#list tbl.columnsWithNotEmptyValue as x>
                       ? <#if x_has_next>,</#if>
                   </#list>
                   )
