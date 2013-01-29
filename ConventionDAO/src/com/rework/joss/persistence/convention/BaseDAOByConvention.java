@@ -10,7 +10,6 @@ package com.rework.joss.persistence.convention;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -28,10 +27,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -123,7 +124,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
     
     private Map<String, String> userSqlMap = null;
     
-    private Long lastModifyTime = null;
+    private AtomicLong lastModifyTime = null;
 
     protected ORMappingSource metaSource;
 	
@@ -756,7 +757,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 				setPkValue(dto, generator.id()); 
 			}
 		}
-		excuteUpdate("create", dto, false);
+		excuteUpdate("create", dto, true);
 	}
 
 	/**
@@ -1275,7 +1276,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 		
 		String tableName = tableObject.getName();
 		
-		if(!sqlBeforeParepareStatement.toUpperCase().trim().startsWith("SELECT")){
+		if(!StringUtils.containsIgnoreCase(sqlBeforeParepareStatement, "select")){
 			sqlBeforeParepareStatement = " SELECT * FROM " + tableName + " " + sqlBeforeParepareStatement;
 		}
 		
@@ -1565,55 +1566,63 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 		return results;
 	}
 
-    private Map<String, String> getUserSqlMap() {
-    	
-    	InputStream input = null;
-    	if( null != this.userSqlMap ){
-	    	// 如果在调式模式下，那么判断是否文件进行过修改，如果修改过那么把sqlmap清空，重新加载
-	    	if( "true".equals(GlobalConfig.get("debug")) ){
-	    		
-	    		
-	    		
-	    		URL url = getClass().getResource( getClass().getSimpleName() + ".sqlmap" );
-	    		// 有并且不在jar包中
-	    		if( null != url && url.getFile().indexOf(".jar") < 0 ){
-	    			long currentLastmodify = new File( url.getPath() ).lastModified();
-	    			if( null != lastModifyTime ){
-	    				if( lastModifyTime.longValue() != currentLastmodify ){
-	    					userSqlMap = null;
-	    				}
-	    			}
-	    			lastModifyTime = currentLastmodify;
-	    		}
-	    	}
+	private Map<String, String> getUserSqlMap() {
+    	if( null != this.userSqlMap && !"true".equals(GlobalConfig.get("debug"))){
+    		return this.userSqlMap;
     	}
-    	// 第一次访问的时候进行初始化
-    	if( null == this.userSqlMap ){
-    		userSqlMap = new HashMap();
-    		try {
-    			if(StringUtils.isBlank( this.mappingFilePath )){
-    				ClassPathResource resource = new ClassPathResource(getClass().getSimpleName() + ".sqlmap", getClass());
-    				if(resource.exists()) {
-    					try{
-    						input = new FileInputStream(resource.getURL().getPath());
-    						lastModifyTime = resource.getFile().lastModified();
-    					}catch(FileNotFoundException ex) {
-    						//获取jar下的资源会抱错
-    						input = resource.getInputStream();
-    					}
-    				}else{
-    					logger.debug(" no sqlmapping file find! ");
-    				}
-    			}else{
-    				input = Thread.currentThread().getContextClassLoader().getResourceAsStream( this.mappingFilePath );
-    			}
-    		} catch (Exception e) {
-    			logger.debug(" no sqlmapping file find! ");
-    		}
-    		if( null == input ){
-        		logger.debug(" no sqlmapping file find! ");
-            }else{
-            	try {
+    	URL url = getClass().getResource( getClass().getSimpleName() + ".sqlmap" );
+    	if(StringUtils.isBlank( this.mappingFilePath ) && url == null){
+    		logger.debug(" no sqlmapping file find! ");
+    		return MapUtils.EMPTY_MAP;
+    	}
+    	synchronized (this) {
+			// 有并且不在jar包中
+			if( null != url && url.getFile().indexOf(".jar") < 0 ){
+				try{
+					long currentLastmodify = new File( url.toURI() ).lastModified();
+					//没有修改
+					if( null != lastModifyTime && currentLastmodify > 0 
+							&& lastModifyTime.longValue() == currentLastmodify){
+						return this.userSqlMap == null? new HashMap<String, String>() : this.userSqlMap;
+					}
+					lastModifyTime = new AtomicLong(currentLastmodify);
+				}catch(Exception ex) {
+					logger.error("读取" + url + "出错", ex);
+				}
+			}
+			this.userSqlMap = null;
+			
+			Map<String, String> tempUserSqlMap = new HashMap<String, String>();
+			InputStream input = null;
+			try {
+				if(StringUtils.isBlank( this.mappingFilePath )){
+					ClassPathResource resource = new ClassPathResource(getClass().getSimpleName() + ".sqlmap", getClass());
+					if(resource.exists()) {
+						if(resource.getURI() == null) {
+							//获取jar下的资源会抱错
+							input = resource.getInputStream();
+						}else{
+							try{
+								input = new FileInputStream(resource.getURI().getPath());
+								lastModifyTime = new AtomicLong(resource.getFile().lastModified());
+							}catch(Exception ex) {
+								//获取jar下的资源会抱错
+								input = resource.getInputStream();
+							}
+						}
+					}else{
+						logger.debug(" no sqlmapping file find! ");
+					}
+				}else{
+					input = Thread.currentThread().getContextClassLoader().getResourceAsStream( this.mappingFilePath );
+				}
+			} catch (Exception e) {
+				logger.debug(" no sqlmapping file find! ");
+			}
+			if( null == input ){
+	    		logger.debug(" no sqlmapping file find! ");
+	        }else{
+	        	try {
 					char[] chars = IOUtils.toCharArray(input, "UTF-8");
 					StringBuffer s = new StringBuffer();
 					
@@ -1639,22 +1648,24 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 								s = new StringBuffer();
 							}else if( ';' == status && chars[i] == status ){
 								status = '=';
-								userSqlMap.put( StringUtils.trim( key ), StringUtils.trim( s.toString() ) );
+								tempUserSqlMap.put( StringUtils.trim( key ), StringUtils.trim( s.toString() ) );
 								s = new StringBuffer();
 							}else{
 								s.append(chars[i]);
 							}
 						}
 					}
-					input.close();
 				} catch (IOException e) {
 					logger.debug(" load sqlmapping file error! ");
+				} finally {
+					IOUtils.closeQuietly(input);
 				}
 				
-            }
-    	}
-    	
-    	return userSqlMap;
+	        }
+    		this.userSqlMap = tempUserSqlMap;
+    		tempUserSqlMap = null;
+		}
+    	return this.userSqlMap == null? MapUtils.EMPTY_MAP : userSqlMap;
     }
 
     public Object queryForBaseObjectByTpl(String sqlTemplate) {
@@ -1734,7 +1745,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 		assertInit();
 		
 		sqlTemplate = processSqlmap(sqlTemplate);
-		if(!sqlTemplate.toUpperCase().trim().startsWith("SELECT")){
+		if(!StringUtils.containsIgnoreCase(sqlTemplate, "select")){
 			String tableName = tableObject.getName();
 			sqlTemplate = " SELECT count(*) FROM " + tableName + " " + sqlTemplate;
 		}
@@ -1750,7 +1761,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 		assertInit();
 		
 		sqlTemplate = processSqlmap(sqlTemplate);
-		if(!sqlTemplate.toUpperCase().trim().startsWith("SELECT")){
+		if(!StringUtils.containsIgnoreCase(sqlTemplate, "select")){
 			String tableName = tableObject.getName();
 			sqlTemplate = " SELECT count(*) FROM " + tableName + " " + sqlTemplate;
 		}
