@@ -44,7 +44,7 @@ public class SqlTemplateParseDTO extends BaseObject {
 	private void parse(){
 		if(StringUtils.isBlank(template))
 			throw new RuntimeException("没有预先配置需要解析的sql语句！");
-		String[] tokens = StringUtils.split(template,"#");
+		String[] tokens = StringUtils.splitPreserveAllTokens(template,"#");
 		if(tokens != null && tokens.length > 0){
 			StringBuffer parseSql = new StringBuffer();
 			List argsList = new LinkedList();
