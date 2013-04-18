@@ -358,7 +358,7 @@ public abstract class ConventionUtils {
 						typeList.add(new Integer(elem.getJdbcType()));
 					}
 				}
-				if(propValueLabel == PROPVALUE_NOT_EMPTY_FLAG && value != null && StringUtils.isNotBlank(String.valueOf(value))){
+				if(propValueLabel == PROPVALUE_NOT_EMPTY_FLAG && value != null && StringUtils.isNotEmpty(String.valueOf(value))){
 					valueList.add(handleValue);
 					typeList.add(new Integer(elem.getJdbcType()));
 				}
