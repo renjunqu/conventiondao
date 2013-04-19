@@ -767,6 +767,10 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	 * @param value
 	 */
 	private void setPkValue(BaseObject dto, Object value) {
+		if(tableObject.getPkColumns().size() == 0) {
+			//没有主键的话重新取一遍，正常情况下不会发生的
+			tableObject = metaSource.freshTableMetaData(dbo);
+		}
 		if( null == tableObject.getPkColumn() ){
 			throw new BaseRuntimeException("需要为表定义主键！");
 		}

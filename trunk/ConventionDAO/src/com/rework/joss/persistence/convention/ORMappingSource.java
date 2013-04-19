@@ -77,4 +77,14 @@ public class ORMappingSource {
 			return getMetaNotFromCache( dbo);
 		}
 	}
+	
+	/**
+	 * 重新从数据库读取表结构
+	 */
+	public TableBean freshTableMetaData(String dbo) {
+		if(null == container){
+			container = new Container();
+		}
+		return getMetaNotFromCache( dbo);
+	}
 }
