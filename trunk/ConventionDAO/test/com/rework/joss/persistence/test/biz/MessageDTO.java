@@ -1,6 +1,4 @@
 ﻿package com.rework.joss.persistence.test.biz;
-import java.sql.Clob;
-
 import com.rework.core.dto.BaseObject;
  
 public class MessageDTO extends BaseObject {
@@ -12,124 +10,32 @@ public class MessageDTO extends BaseObject {
     public static final String FieldKslb = "Title";
 
     private String id;
-
 	private String  message;      
-	private String createDate;  
-	private String createUser;            
-	private String accessUser;            
-	private String validDate;             
-	private String title;    
-
-	public MessageDTO() {
-		super();
-	}
-
+	private String url;             
+	private String usernmae;
 	public String getId() {
 		return id;
 	}
-
 	public void setId(String id) {
 		this.id = id;
 	}
-	
-	/**
-	 * @return
-	 */
-	public String getAccessUser()
-	{
-		return accessUser;
-	}
-
-	/**
-	 * @return
-	 */
-	public String getCreateDate()
-	{
-		return createDate;
-	}
-
-	/**
-	 * @return
-	 */
-	public String getCreateUser()
-	{
-		return createUser;
-	}
-
-	/**
-	 * @return
-	 */
-	public String getMessage()
-	{
+	public String getMessage() {
 		return message;
 	}
-
-	/**
-	 * @return
-	 */
-	public String getTitle()
-	{
-		return title;
+	public void setMessage(String message) {
+		this.message = message;
 	}
-
-	/**
-	 * @return
-	 */
-	public String getValidDate()
-	{
-		return validDate;
+	public String getUrl() {
+		return url;
 	}
-
-	/**
-	 * @param string
-	 */
-	public void setAccessUser(String string)
-	{
-		accessUser = string;
+	public void setUrl(String url) {
+		this.url = url;
 	}
-
-	/**
-	 * @param string
-	 */
-	public void setCreateDate(String string)
-	{
-		createDate = string;
+	public String getUsernmae() {
+		return usernmae;
 	}
-
-	/**
-	 * @param string
-	 */
-	public void setCreateUser(String string)
-	{
-		createUser = string;
-	}
-
-	/**
-	 * @param string
-	 */
-	public void setMessage(String  string)
-	{
-		message = string;
-	}
-//	public void setMessage(String  string)
-//	{
-//		message = new Clob(string);
-//	}
-
-	/**
-	 * @param string
-	 */
-	public void setTitle(String string)
-	{
-		title = string;
-	}
-
-	/**
-	 * @param string
-	 */
-	public void setValidDate(String string)
-	{
-		validDate = string;
-	}
+	public void setUsernmae(String usernmae) {
+		this.usernmae = usernmae;
+	}    
 
   }

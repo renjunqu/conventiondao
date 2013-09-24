@@ -16,9 +16,9 @@ public class SqlTemplateParseDTOTest {
 	
 	@Test
 	public void testBlankArguments() {
-		SqlTemplateParseDTO dto = new SqlTemplateParseDTO("select * from test where user=##");
+		SqlTemplateParseDTO dto = new SqlTemplateParseDTO("select * from test where user=# #");
 		Assert.assertEquals(dto.getParseResult(), "select * from test where user=?");
-		Assert.assertArrayEquals(dto.getTemplateArgs(), new String[]{ "" });
+		Assert.assertArrayEquals(dto.getTemplateArgs(), new String[]{ " " });
 	}
 	
 	@Test

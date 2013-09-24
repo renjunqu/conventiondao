@@ -80,3 +80,15 @@ DROP TABLE IF EXISTS `vw_gy_user`;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 
 alter table `daotest`.`dao_test` add column `bigtext` text NULL after `id`;
+
+CREATE TABLE `auto_generate_id` (                          
+`id` int(10) NOT NULL,                                   
+`name` varchar(20) DEFAULT NULL,                         
+PRIMARY KEY (`id`)                                     
+) ENGINE=InnoDB DEFAULT CHARSET=utf8  ;
+
+CREATE TABLE `auto_generate_id2` (                          
+`id` int(10) NOT NULL,                                   
+`name` varchar(20) DEFAULT NULL,                         
+PRIMARY KEY (`id`)                                     
+) ENGINE=InnoDB DEFAULT CHARSET=utf8  ;
