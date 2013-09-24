@@ -8,6 +8,9 @@
  */
 package com.rework.joss.persistence.convention;
 
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 import javax.sql.DataSource;
 
 import org.springframework.util.Assert;
@@ -32,6 +35,8 @@ public class ORMappingSource {
 
 	private DataSource dataSource;
 	
+	private Lock lock = new ReentrantLock(false);
+	
 	public void setContainer(Container container) {
 		ORMappingSource.container = container;
 	}
@@ -48,11 +53,15 @@ public class ORMappingSource {
 		// 从数据库的metadata中取出字段信息集合
 		Assert.notNull(dbo);
 		IDBFacade db = DBFactory.getDBFacade(this.dataSource);
+		//保证不会多线程先会重复读取列
+		lock.lock();
 		try{
 			db.populateTableData(container,dbo);
 		}catch(Exception ex){
 			//读取表结构够失败
 			ex.printStackTrace();
+		}finally{
+			lock.unlock();
 		}
 		TableBean table = container.getTable(dbo);
 		return table;

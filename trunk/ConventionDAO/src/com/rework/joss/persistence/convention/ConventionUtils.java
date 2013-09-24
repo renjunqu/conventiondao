@@ -326,8 +326,8 @@ public abstract class ConventionUtils {
 				// value = jdbcTypeHandlerFactory.getTypeHandler(elem.getJdbcType()).handerJdbcTypeValue(value);
 				Object handleValue = jdbcTypeHandlerFactory.getTypeHandler(elem.getJdbcType()).handerJdbcTypeValue(value);
 				if(propValueLabel == PROPVALUE_NOT_IGNORE_NULL_FLAG ){//如果不忽略null那么
-					if(null == value){//如果为null就设为空串
-						valueList.add("");
+					if(null == value || "".equals(String.valueOf(value))){//如果为为空串则变成null
+						valueList.add(null);
 					}else{
 						valueList.add(handleValue);
 					}
