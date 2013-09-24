@@ -1,11 +1,16 @@
 package com.rework.joss.persistence.convention.id;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.support.JdbcDaoSupport;
+import javax.sql.DataSource;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.jdbc.datasource.DataSourceUtils;
+import org.springframework.jdbc.support.JdbcUtils;
 
 /**
  * 在数据库中单建表产生id的策略
@@ -13,61 +18,41 @@ import org.springframework.jdbc.core.support.JdbcDaoSupport;
  * @author heaven
  *
  */
-public class IdTableGenerator extends JdbcDaoSupport implements IdGenerator{
-
-	private String checkSql;
-
-	private String createTableSql;
-
-	private String insertSql;
-
-	private String updateSql;
-
-	private String selectSql;
-
-	/**
-	 * 初始化
-	 * 如果没建表，那么新建
-	 * 插一条记录
-	 */
-	public void init(){
-		try{
-			getJdbcTemplate().query(checkSql, new RowMapper(){
-				public Object mapRow(ResultSet arg0, int arg1)
-						throws SQLException {
-					return null;
-				}});
-		}catch (DataAccessException e) {
-			getJdbcTemplate().update(createTableSql);
-			getJdbcTemplate().update(insertSql);
+public class IdTableGenerator implements IdGenerator{
+	private Log logger = LogFactory.getLog(getClass());
+	
+	public Object id(DataSource ds, String dbo){
+		Connection con = DataSourceUtils.getConnection(ds);
+		Statement ps = null;
+		ResultSet rs = null;
+		String id = null;
+		try {
+			ps = con.createStatement();
+			ps.executeUpdate("REPLACE INTO table_pk_key(table_name) VALUES ('"+ dbo +"')");
+			rs = ps.executeQuery("SELECT LAST_INSERT_ID()");
+			if(rs.next()) {
+				id = rs.getString(1);
+			}
+			if (logger.isDebugEnabled()) {
+				logger.debug("生成["+ dbo +"]主键:" + id);
+			}
+			return id;
 		}
+		catch (SQLException ex) {
+			logger.error(dbo + "生成主键失败", ex);
+			JdbcUtils.closeResultSet(rs);
+			JdbcUtils.closeStatement(ps);
+			ps = null;
+			DataSourceUtils.releaseConnection(con, ds);
+			con = null;
+		}
+		finally {
+			JdbcUtils.closeResultSet(rs);
+			JdbcUtils.closeStatement(ps);
+			DataSourceUtils.releaseConnection(con, ds);
+		}
+		return null;
 	}
-
-	public Object id(){
-		getJdbcTemplate().update(updateSql);
-		return getJdbcTemplate().queryForLong(selectSql);
-	}
-
-	public void setCheckSql(String checkSql) {
-		this.checkSql = checkSql;
-	}
-
-	public void setCreateTableSql(String createTableSql) {
-		this.createTableSql = createTableSql;
-	}
-
-	public void setInsertSql(String insertSql) {
-		this.insertSql = insertSql;
-	}
-
-	public void setUpdateSql(String updateSql) {
-		this.updateSql = updateSql;
-	}
-
-	public void setSelectSql(String selectSql) {
-		this.selectSql = selectSql;
-	}
-
 
 
 }
