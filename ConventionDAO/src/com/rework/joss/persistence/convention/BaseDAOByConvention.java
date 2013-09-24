@@ -35,6 +35,7 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
@@ -484,21 +485,21 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}	
 	
 	/**
-	 * 判断某个属性值是否在数据库中存在对应的字段
+	 * 如果 某个属性值在数据库中存在对应的字段则返回对应字段名，反之返回null
 	 * @param propertyName
 	 * @return
 	 */
-	private boolean isPropertyHasMappingWithColumn(String propertyName){
+	private String getPropertyMappingColumn(String propertyName){
 		String columnName = conventionStrategy.translateFromPropertyToColumn(propertyName);
 		//判断是否是自定义字段映射 
 		if(colMap.containsKey(columnName)){
-			return true;
+			return columnName;
 		}
 		//判断位于数据库结构中
 		if(tableObject.getColumn(columnName) != null){
-			return true;
+			return columnName;
 		}
-		return false;
+		return null;
 	}
 	
 	public BaseObject findById(Object id){
@@ -510,16 +511,12 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 		
 		assertInit();
 		if(tableObject.getPkColumns().isEmpty()){
-			throw new BaseRuntimeException("未定义主键!");
-			/*
-			if(!isPropertyHasMappingWithColumn("id")){
+			String id2ColumnName = getPropertyMappingColumn("id");
+			if(StringUtils.isEmpty(id2ColumnName)){
 				throw new RuntimeException("属性中的id没有与数据库字段进行对应!");
 			}
-			BaseObject queryDTO = getBaseObjectByPojoPath();
-			queryDTO.setId(id);
-			List resultList = query(queryDTO, null);
+			List resultList = this.queryByCriteria(id2ColumnName + "='"+ StringEscapeUtils.escapeSql(String.valueOf(id)) +"'");
 			return resultList.size() > 0 ? (BaseObject)resultList.get(0) : null;
-			*/
 		}else{
 			String sqlTemplate = getSqlTemplate("findById");
 			String sql = initSqlMapByKey(sqlTemplate, mixDbAndPojo(null), null);
@@ -754,7 +751,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 		}
 		if(pkValue == null || StringUtils.isEmpty(pkValue.toString())) {
 			if(null != generator){
-				setPkValue(dto, generator.id()); 
+				setPkValue(dto, generator.id(getDataSource(), dbo)); 
 			}
 		}
 		excuteUpdate("create", dto, true);
@@ -828,7 +825,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 			}
 			if(pkValue == null || StringUtils.isEmpty(pkValue.toString())) {
 				if(null != generator){
-					setPkValue(dtos[i], generator.id()); 
+					setPkValue(dtos[i], generator.id(getDataSource(), dbo)); 
 				}
 			}
 		}
@@ -888,6 +885,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 		}
 	}
 	
+
 	public void create(Map beanMap) {
 		// TODO 优化
 		Assert.notNull(beanMap);
@@ -1087,6 +1085,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	
 	//根据map的key拷贝map值到BaseObject对应的属性
 	private BaseObject toPojo(Map paramMap){
+		assertInit();
 		BaseObject dto = getBaseObjectByPojoPath();
 		ConventionUtils.copy(dto, paramMap);
 		return dto;
@@ -1262,6 +1261,7 @@ public class BaseDAOByConvention extends JdbcDaoSupport implements IBaseDAO {
 	}
 	
 	public int executeUpdate(final String sqlKey, final Map argsMap){
+		assertInit();
 		return executeUpdateBySql(processSqlmap(sqlKey), argsMap);
 	}
 	
