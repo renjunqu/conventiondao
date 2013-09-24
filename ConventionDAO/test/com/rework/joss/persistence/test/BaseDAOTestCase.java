@@ -38,7 +38,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"classpath:applicationSourceTest.xml", "classpath:com/rework/joss/persistence/test/daoContext.xml"})
 @TransactionConfiguration(transactionManager="transactionManager", defaultRollback=true)
-@Transactional
 public class BaseDAOTestCase{
 	protected Log logger = LogFactory.getLog(getClass());
 
