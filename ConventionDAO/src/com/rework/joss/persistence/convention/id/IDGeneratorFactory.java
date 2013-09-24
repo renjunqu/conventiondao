@@ -23,8 +23,8 @@ public class IDGeneratorFactory implements FactoryBean{
 		if(StringUtils.isNotBlank(idGenerator)){
 			if("uuid".equals(idGenerator)){
 				return new UUIDIdGenerator();
-			}else if("uuid".equals(idGenerator)){
-				
+			}else if("id_table".equals(idGenerator)){
+				return new IdTableGenerator();
 			}
 		}
 		return null;
