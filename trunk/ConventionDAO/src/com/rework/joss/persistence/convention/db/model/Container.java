@@ -3,6 +3,7 @@ package com.rework.joss.persistence.convention.db.model;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -14,7 +15,7 @@ public class Container {
 	/**
 	 * {tablename, {@link TableBean}}
 	 */
-	private Map tables = new HashMap();
+	private Map tables = new ConcurrentHashMap();
 	
 	public boolean fullyLoaded;
 	private String packageName;
